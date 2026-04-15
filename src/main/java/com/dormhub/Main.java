@@ -1,4 +1,4 @@
-﻿package com.dormhub;
+package com.dormhub;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -26,3 +26,4 @@ public class Main extends Application {
         launch(args);
     }
 }
+
