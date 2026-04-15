@@ -5,7 +5,7 @@ import java.sql.Date;
 public class Payment {
     private int paymentId;
     private int residentId;
-    private int amount;
+    private double amount;
     private Date paymentDate;
     private String method;
     private String status;
@@ -26,7 +26,7 @@ public class Payment {
         this.residentId = residentId;
     }
 
-    public int getAmount() {
+    public double getAmount() {
         return amount;
     }
 

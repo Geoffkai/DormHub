@@ -21,7 +21,7 @@ public class PaymentDAOImpl implements PaymentDAO {
 
             ps.setInt(1, payment.getPaymentId());
             ps.setInt(2, payment.getResidentId());
-            ps.setInt(3, payment.getAmount());
+            ps.setDouble(3, payment.getAmount());
             ps.setDate(4, payment.getPaymentDate());
             ps.setString(5, payment.getMethod());
             ps.setString(6, payment.getStatus());
@@ -45,7 +45,7 @@ public class PaymentDAOImpl implements PaymentDAO {
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, payment.getResidentId());
-            ps.setInt(2, payment.getAmount());
+            ps.setDouble(2, payment.getAmount());
             ps.setDate(3, payment.getPaymentDate());
             ps.setString(4, payment.getMethod());
             ps.setString(5, payment.getStatus());
