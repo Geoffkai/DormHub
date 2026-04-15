@@ -1,5 +1,8 @@
 package com.dormhub;
 
+import com.dormhub.cli.CLIApp;
+import java.util.Arrays;
+import java.util.Scanner;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -23,6 +26,17 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+        boolean cliMode = Arrays.stream(args).anyMatch("--cli"::equalsIgnoreCase);
+        boolean guiMode = Arrays.stream(args).anyMatch("--gui"::equalsIgnoreCase);
+
+        if (cliMode || !guiMode) {
+            try (Scanner scanner = new Scanner(System.in)) {
+                CLIApp cliApp = new CLIApp(scanner);
+                cliApp.run();
+            }
+            return;
+        }
+
         launch(args);
     }
 }
