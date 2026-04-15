@@ -1,9 +1,8 @@
 package com.dormhub.dao;
 
-import com.dormhub.model;
-
 import java.util.List;
-import model.Resident;
+
+import com.dormhub.model.Resident;
 
 public interface ResidentDAO {
     void insert(Resident resident);
@@ -20,6 +19,6 @@ public interface ResidentDAO {
 
     List<Resident> findByYearLevel(int yearLevel);
 
-    List<Resident> viewAllResident();
+    List<Resident> findAllResidents();
 
 }

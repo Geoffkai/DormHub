@@ -2,6 +2,8 @@ package com.dormhub.dao;
 
 import java.util.List;
 
+import com.dormhub.model.Room;
+
 public interface RoomDAO {
     void insert(Room room);
 

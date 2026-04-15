@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dormhub.dao.RoomDAO;
+import com.dormhub.model.Room;
+import com.dormhub.util.DBUtil;
 
 public class RoomDAOImpl implements RoomDAO {
     @Override
     public void insert(Room room) {
-        String sql = "INSERT INTO room (room_no, room_type, capacity, current_occupancy) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO room (room_number, room_type, capacity, current_occupancy) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -35,7 +37,7 @@ public class RoomDAOImpl implements RoomDAO {
 
     @Override
     public void update(Room room) {
-        String sql = "UPDATE room SET room_type = ?, capacity = ?, current_occupancy = ? WHERE room_no = ?";
+        String sql = "UPDATE room SET room_type = ?, capacity = ?, current_occupancy = ? WHERE room_number = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -58,7 +60,7 @@ public class RoomDAOImpl implements RoomDAO {
 
     @Override
     public void delete(int roomNo) {
-        String sql = "DELETE FROM room WHERE room_no = ?";
+        String sql = "DELETE FROM room WHERE room_number = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -78,7 +80,7 @@ public class RoomDAOImpl implements RoomDAO {
 
     @Override
     public Room findById(int roomNo) {
-        String sql = "SELECT * FROM room WHERE room_no = ?";
+        String sql = "SELECT * FROM room WHERE room_number = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -87,7 +89,7 @@ public class RoomDAOImpl implements RoomDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Room room = new Room();
-                    room.setRoomNo(rs.getInt("room_no"));
+                    room.setRoomNo(rs.getInt("room_number"));
                     room.setRoomType(rs.getString("room_type"));
                     room.setCapacity(rs.getInt("capacity"));
                     room.setCurrentOccupancy(rs.getInt("current_occupancy"));
@@ -114,7 +116,7 @@ public class RoomDAOImpl implements RoomDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Room room = new Room();
-                    room.setRoomNo(rs.getInt("room_no"));
+                    room.setRoomNo(rs.getInt("room_number"));
                     room.setRoomType(rs.getString("room_type"));
                     room.setCapacity(rs.getInt("capacity"));
                     room.setCurrentOccupancy(rs.getInt("current_occupancy"));
@@ -142,7 +144,7 @@ public class RoomDAOImpl implements RoomDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Room room = new Room();
-                    room.setRoomNo(rs.getInt("room_no"));
+                    room.setRoomNo(rs.getInt("room_number"));
                     room.setRoomType(rs.getString("room_type"));
                     room.setCapacity(rs.getInt("capacity"));
                     room.setCurrentOccupancy(rs.getInt("current_occupancy"));
@@ -168,7 +170,7 @@ public class RoomDAOImpl implements RoomDAO {
 
             while (rs.next()) {
                 Room room = new Room();
-                room.setRoomNo(rs.getInt("room_no"));
+                room.setRoomNo(rs.getInt("room_number"));
                 room.setRoomType(rs.getString("room_type"));
                 room.setCapacity(rs.getInt("capacity"));
                 room.setCurrentOccupancy(rs.getInt("current_occupancy"));

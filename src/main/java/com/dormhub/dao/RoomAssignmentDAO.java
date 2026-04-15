@@ -1,5 +1,9 @@
 package com.dormhub.dao;
 
+import java.util.List;
+
+import com.dormhub.model.RoomAssignment;
+
 public interface RoomAssignmentDAO {
     void insert(RoomAssignment roomAssignment);
 
@@ -13,5 +17,5 @@ public interface RoomAssignmentDAO {
 
     List<RoomAssignment> findByRoomId(int roomId);
 
-    List<RoomAssignment> findAllAssignment();
+    List<RoomAssignment> findAllAssignments();
 }

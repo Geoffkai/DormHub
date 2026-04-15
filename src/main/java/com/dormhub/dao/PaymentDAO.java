@@ -1,5 +1,9 @@
 package com.dormhub.dao;
 
+import java.util.List;
+
+import com.dormhub.model.Payment;
+
 public interface PaymentDAO {
     void insert(Payment payment);
 

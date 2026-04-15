@@ -7,10 +7,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoomAssignmentDAOImpl {
+import com.dormhub.dao.RoomAssignmentDAO;
+import com.dormhub.model.RoomAssignment;
+import com.dormhub.util.DBUtil;
+
+public class RoomAssignmentDAOImpl implements RoomAssignmentDAO {
     @Override
     public void insert(RoomAssignment roomAssignment) {
-        String sql = "INSERT INTO room_assignment (assignment_id, resident_id, room_id, date_assigned, date_vacated) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO room_assignments (assignment_id, resident_id, room_id, date_assigned, date_vacated) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -34,7 +38,7 @@ public class RoomAssignmentDAOImpl {
 
     @Override
     public void update(RoomAssignment roomAssignment) {
-        String sql = "UPDATE room_assignment SET resident_id = ?, room_id = ?, date_assigned = ?, date_vacated = ? WHERE assignment_id = ?";
+        String sql = "UPDATE room_assignments SET resident_id = ?, room_id = ?, date_assigned = ?, date_vacated = ? WHERE assignment_id = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -58,7 +62,7 @@ public class RoomAssignmentDAOImpl {
 
     @Override
     public void delete(int assignmentId) {
-        String sql = "DELETE FROM room_assignment WHERE assignment_id = ?";
+        String sql = "DELETE FROM room_assignments WHERE assignment_id = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -78,7 +82,7 @@ public class RoomAssignmentDAOImpl {
 
     @Override
     public RoomAssignment findById(int assignmentId) {
-        String sql = "SELECT * FROM room_assignment WHERE assignment_id = ?";
+        String sql = "SELECT * FROM room_assignments WHERE assignment_id = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -105,7 +109,7 @@ public class RoomAssignmentDAOImpl {
     @Override
     public List<RoomAssignment> findByResidentId(int residentId) {
         List<RoomAssignment> assignments = new ArrayList<>();
-        String sql = "SELECT * FROM room_assignment WHERE resident_id = ?";
+        String sql = "SELECT * FROM room_assignments WHERE resident_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -134,7 +138,7 @@ public class RoomAssignmentDAOImpl {
     @Override
     public List<RoomAssignment> findByRoomId(int roomId) {
         List<RoomAssignment> assignments = new ArrayList<>();
-        String sql = "SELECT * FROM room_assignment WHERE room_id = ?";
+        String sql = "SELECT * FROM room_assignments WHERE room_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -163,7 +167,7 @@ public class RoomAssignmentDAOImpl {
     @Override
     public List<RoomAssignment> findAllAssignments() {
         List<RoomAssignment> assignments = new ArrayList<>();
-        String sql = "SELECT * FROM room_assignment";
+        String sql = "SELECT * FROM room_assignments";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);

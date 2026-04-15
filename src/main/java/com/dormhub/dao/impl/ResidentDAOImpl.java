@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dormhub.dao.ResidentDAO;
+import com.dormhub.model.Resident;
+import com.dormhub.util.DBUtil;
 
 public class ResidentDAOImpl implements ResidentDAO {
     @Override
     public void insert(Resident resident) {
-        String sql = "";
+        String sql = "INSERT INTO resident (resident_id, last_name, first_name, contact_no, year_level, program, move_in_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -22,6 +24,7 @@ public class ResidentDAOImpl implements ResidentDAO {
             ps.setString(4, resident.getContactNo());
             ps.setInt(5, resident.getYearLevel());
             ps.setString(6, resident.getProgram());
+            ps.setDate(7, resident.getMoveInDate());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -36,7 +39,7 @@ public class ResidentDAOImpl implements ResidentDAO {
 
     @Override
     public void update(Resident resident) {
-        String sql = "";
+        String sql = "UPDATE resident SET last_name = ?, first_name = ?, contact_no = ?, year_level = ?, program = ?, move_in_date = ? WHERE resident_id = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -45,7 +48,8 @@ public class ResidentDAOImpl implements ResidentDAO {
             ps.setString(3, resident.getContactNo());
             ps.setInt(4, resident.getYearLevel());
             ps.setString(5, resident.getProgram());
-            ps.setInt(6, resident.getResidentId());
+            ps.setDate(6, resident.getMoveInDate());
+            ps.setInt(7, resident.getResidentId());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -96,6 +100,7 @@ public class ResidentDAOImpl implements ResidentDAO {
                     resident.setContactNo(rs.getString("contact_no"));
                     resident.setYearLevel(rs.getInt("year_level"));
                     resident.setProgram(rs.getString("program"));
+                    resident.setMoveInDate(rs.getDate("move_in_date"));
                     return resident;
                 }
             }
@@ -125,6 +130,7 @@ public class ResidentDAOImpl implements ResidentDAO {
                     resident.setContactNo(rs.getString("contact_no"));
                     resident.setYearLevel(rs.getInt("year_level"));
                     resident.setProgram(rs.getString("program"));
+                    resident.setMoveInDate(rs.getDate("move_in_date"));
                     residents.add(resident);
                 }
             }
@@ -155,6 +161,7 @@ public class ResidentDAOImpl implements ResidentDAO {
                     resident.setContactNo(rs.getString("contact_no"));
                     resident.setYearLevel(rs.getInt("year_level"));
                     resident.setProgram(rs.getString("program"));
+                    resident.setMoveInDate(rs.getDate("move_in_date"));
                     residents.add(resident);
                 }
             }
@@ -213,6 +220,7 @@ public class ResidentDAOImpl implements ResidentDAO {
                 resident.setContactNo(rs.getString("contact_no"));
                 resident.setYearLevel(rs.getInt("year_level"));
                 resident.setProgram(rs.getString("program"));
+                resident.setMoveInDate(rs.getDate("move_in_date"));
                 residents.add(resident);
             }
 

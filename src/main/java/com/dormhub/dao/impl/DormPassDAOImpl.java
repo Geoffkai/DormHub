@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dormhub.dao.DormPassDAO;
+import com.dormhub.model.DormPass;
+import com.dormhub.util.DBUtil;
 
 public class DormPassDAOImpl implements DormPassDAO {
     @Override
