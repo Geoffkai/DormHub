@@ -1,0 +1,11 @@
+target/
+*.class
+maven-status/
+surefire-reports/
+
+# IDE files
+.idea/
+
+# Generated upgrade artifacts
+.github/java-upgrade/
+
