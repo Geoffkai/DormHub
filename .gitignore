@@ -1,10 +1,25 @@
 target/
+out/
 *.class
+*.log
+
+# Maven and test outputs
 maven-status/
 surefire-reports/
 
 # IDE files
 .idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # Generated upgrade artifacts
 .github/java-upgrade/

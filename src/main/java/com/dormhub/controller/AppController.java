@@ -1,9 +1,14 @@
 package com.dormhub.controller;
 
+import com.dormhub.service.ResidentService;
+import com.dormhub.service.ResidentServiceImpl;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
 public class AppController {
+
+    private final ResidentService residentService = new ResidentServiceImpl();
 
     @FXML
     private Label statusLabel;
@@ -15,6 +20,11 @@ public class AppController {
 
     @FXML
     private void handleHello() {
-        statusLabel.setText("Hello from DormHub!");
+        try {
+            int residentCount = residentService.findAllResidents().size();
+            statusLabel.setText("Resident records: " + residentCount);
+        } catch (RuntimeException e) {
+            statusLabel.setText("Unable to load resident data.");
+        }
     }
 }
