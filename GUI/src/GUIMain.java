@@ -21,7 +21,7 @@ public class GUIMain {
         ImageIcon exitIcon = new ImageIcon("src/img/Exit.png");
         JButton exitButton = new JButton(exitIcon);
         exitButton.setFocusPainted(false);
-        exitButton.setBounds(1770, 59, 83, 83);
+        exitButton.setBounds(1812, (int) 71.1, 62, 62);
         exitButton.addActionListener(e -> System.exit(0));
         loginPage.add(exitButton);
 
@@ -31,21 +31,21 @@ public class GUIMain {
         loginButton.setFocusPainted(false);
         loginButton.setBackground(Color.WHITE);
         loginButton.setForeground(new Color(31, 59, 44, 255));
-        loginButton.setBounds(1286, 809, 324, 74);
+        loginButton.setBounds((int) 1321.9, (int) 785.9, 284, (int) 64.9);
         loginPage.add(loginButton);
 
         // TextField
         JTextField usernameField = new JTextField();
-        usernameField.setBounds((int) 1151.4, 429, 637, 69);
-        usernameField.setFont(new Font("Arial", Font.PLAIN, 20));
+        usernameField.setBounds((int) 1203.9, (int) 452.8, (int) 558.4, (int)60.5);
+        usernameField.setFont(new Font("Arial", Font.PLAIN, 18));
         usernameField.setBorder(BorderFactory.createEmptyBorder());
         usernameField.setOpaque(false);
         loginPage.add(usernameField);
 
         // PasswordField
         JPasswordField passwordField = new JPasswordField();
-        passwordField.setBounds((int) 1151.4, (int) 611.8, 637, 69);
-        passwordField.setFont(new Font("Arial", Font.PLAIN, 20));
+        passwordField.setBounds((int) 1203.9, 613, (int) 558.4, (int)60.5);
+        passwordField.setFont(new Font("Arial", Font.PLAIN, 18));
         passwordField.setBorder(BorderFactory.createEmptyBorder());
         passwordField.setOpaque(false);
         loginPage.add(passwordField);
@@ -62,8 +62,8 @@ public class GUIMain {
 
         // Error Login Text
         JLabel Error = new JLabel("Invalid credentials. Try again.");
-        Error.setBounds((int) 1084.7, 701, 537, 44);
-        Error.setFont(new Font("Arial", Font.BOLD, 19));
+        Error.setBounds((int) 1145.5, (int) 691.7, (int) 470.1, (int) 38.6);
+        Error.setFont(new Font("Arial", Font.BOLD, 16));
         Error.setForeground(Color.WHITE);
         Error.setVisible(false);
         loginPage.add(Error);

@@ -1,9 +1,13 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 
 public class ContentPanel extends JPanel {
 
     JButton ViewBtn, AddBtn, UpdateBtn, DeleteBtn, ExportBtn;
+    JButton searchBtn;
 
     // Dashboard panels
     JPanel TR = new JPanel();
@@ -15,6 +19,11 @@ public class ContentPanel extends JPanel {
     JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
     private JTextField searchField;
     private JComboBox<String> attributeComboBox;
+    private JTable table;
+    private DefaultTableModel tableModel;
+    private TableRowSorter<DefaultTableModel> sorter;
+    // Scroll pane
+    JScrollPane scrollPane;
 
     public ContentPanel(Dimension screenSize) {
         setLayout(null);
@@ -39,7 +48,7 @@ public class ContentPanel extends JPanel {
         attributeComboBox.setBackground(Color.WHITE);
 
         // Search Button
-        JButton searchBtn = new JButton("Search");
+        searchBtn = new JButton("Search");
         searchBtn.setPreferredSize(new Dimension(123, 35));
         searchBtn.setBackground(Color.WHITE);
         searchBtn.setFont(new Font("Arial", Font.BOLD, 18));
@@ -62,7 +71,45 @@ public class ContentPanel extends JPanel {
         searchPanel.add(searchBtn);
         searchPanel.setBackground(new Color(0, 0, 0, 0));
         searchPanel.setBounds((int) 320.5, (int) 223, (int) 1599.5, (int) 58.6);
-        searchPanel.setVisible(false);
+
+        // Table Model
+        String[] columnNames = {"Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program", "Move-in-date"};
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        // Table
+        table = new JTable(tableModel);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setBackground(Color.WHITE);
+        table.setForeground(Color.BLACK);
+        table.setFont(new Font("Arial", Font.PLAIN, 18));
+        table.setRowHeight(30);
+
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 22));
+        header.setBackground(new Color(31, 59, 44));
+        header.setForeground(Color.WHITE);
+        header.setPreferredSize(new Dimension(header.getPreferredSize().width, 40));
+
+        scrollPane = new JScrollPane(table);
+        scrollPane.setBounds(371, 325, 1497, 701);
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        add(scrollPane);
+
+        // Sorter
+        sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
+
+        // Exit Button
+        ImageIcon exitIcon = new ImageIcon("src/img/ExitGreen.png");
+        JButton exitButton = new JButton(exitIcon);
+        exitButton.setFocusPainted(false);
+        exitButton.setBounds(1840, (int) 26.7, 50, 50);
+        exitButton.addActionListener(e -> System.exit(0));
 
 
         // Dashboard panels
@@ -78,6 +125,8 @@ public class ContentPanel extends JPanel {
         add(searchPanel);
         add(TR); add(PDPR); add(RA); add(RO);
         add(ViewBtn); add(AddBtn); add(UpdateBtn); add(DeleteBtn); add(ExportBtn);
+        add(exitButton);
+
 
         showDashboard(); // initial state
     }
@@ -99,9 +148,46 @@ public class ContentPanel extends JPanel {
         DeleteBtn.setVisible(false);
         ExportBtn.setVisible(false);
         searchPanel.setVisible(false);
+        table.setVisible(false);
+        scrollPane.setVisible(false);
     }
 
-    public void showManager() {
+    public void showResidents() {
+        showManagerPanel(
+                new String[]{"Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program", "Move-in-date"},
+                "Residents"
+        );
+    }
+
+    public void showRooms() {
+        showManagerPanel(
+                new String[]{"Room Number", "Room Type", "Capacity", "Current Occupancy"},
+                "Rooms"
+        );
+    }
+
+    public void showAssignments() {
+        showManagerPanel(
+                new String[]{"Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated"},
+                "Assignments"
+        );
+    }
+
+    public void showPayments() {
+        showManagerPanel(
+                new String[]{"Payment ID", "Resident ID", "Amount", "Payment Date", "Status"},
+                "Payments"
+        );
+    }
+
+    public void showDormPass() {
+        showManagerPanel(
+                new String[]{"Resident ID", "Reason", "Destination", "Date Applied", "Status"},
+                "DormPass"
+        );
+    }
+
+    private void showManagerPanel(String[] columnNames, String label) {
         TR.setVisible(false);
         PDPR.setVisible(false);
         RA.setVisible(false);
@@ -112,5 +198,45 @@ public class ContentPanel extends JPanel {
         DeleteBtn.setVisible(true);
         ExportBtn.setVisible(true);
         searchPanel.setVisible(true);
+        table.setVisible(true);
+        scrollPane.setVisible(true);
+
+        tableModel.setRowCount(0);
+        tableModel.setColumnIdentifiers(columnNames);
+
+        attributeComboBox.removeAllItems();
+        for (String columnName : columnNames) {
+            attributeComboBox.addItem(columnName);
+        }
+
+        bindPlaceholderActions(label);
+    }
+
+    // Rebind button actions every time the active panel changes.
+    // Always remove old listeners first, or one click may trigger actions
+    // from previously opened panels (Residents, Rooms, Payments, etc.).
+    // Replace the placeholder listeners below with the real CRUD/search/export logic.
+    private void bindPlaceholderActions(String label) {
+        // Helper for clearing previously attached ActionListeners from a button
+        // before assigning the current panel's behavior.
+        resetActionListeners(ViewBtn);
+        resetActionListeners(AddBtn);
+        resetActionListeners(UpdateBtn);
+        resetActionListeners(DeleteBtn);
+        resetActionListeners(ExportBtn);
+        resetActionListeners(searchBtn);
+
+        ViewBtn.addActionListener(e -> System.out.println("View all " + label + " clicked"));
+        AddBtn.addActionListener(e -> System.out.println("Add " + label + " clicked"));
+        UpdateBtn.addActionListener(e -> System.out.println("Update " + label + " clicked"));
+        DeleteBtn.addActionListener(e -> System.out.println("Delete " + label + " clicked"));
+        ExportBtn.addActionListener(e -> System.out.println("Export " + label + " clicked"));
+        searchBtn.addActionListener(e -> System.out.println("Search " + label + " clicked"));
+    }
+
+    private void resetActionListeners(AbstractButton button) {
+        for (java.awt.event.ActionListener listener : button.getActionListeners()) {
+            button.removeActionListener(listener);
+        }
     }
 }
