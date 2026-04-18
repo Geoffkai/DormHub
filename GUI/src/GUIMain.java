@@ -62,9 +62,9 @@ public class GUIMain {
 
         // Error Login Text
         JLabel Error = new JLabel("Invalid credentials. Try again.");
-        Error.setBounds((int) 1084.7, 701, 537, 44);  // your Canva coords
+        Error.setBounds((int) 1084.7, 701, 537, 44);
         Error.setFont(new Font("Arial", Font.BOLD, 19));
-        Error.setForeground(Color.WHITE);  // text color
+        Error.setForeground(Color.WHITE);
         Error.setVisible(false);
         loginPage.add(Error);
 
