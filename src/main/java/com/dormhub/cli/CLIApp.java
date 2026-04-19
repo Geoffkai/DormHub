@@ -154,7 +154,8 @@ public class CLIApp {
         String contactNo = readRequired("Contact no [" + existing.getContactNo() + "]: ");
         int yearLevel = readInt("Year level [" + existing.getYearLevel() + "]: ");
         String program = readRequired("Program [" + existing.getProgram() + "]: ");
-        Date moveInDate = readDateOrNull("Move in date [" + existing.getMoveInDate() + "] (YYYY-MM-DD, blank to keep): ");
+        Date moveInDate = readDateOrNull(
+                "Move in date [" + existing.getMoveInDate() + "] (YYYY-MM-DD, blank to keep): ");
 
         if (moveInDate == null) {
             moveInDate = existing.getMoveInDate();

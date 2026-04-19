@@ -1,4 +1,4 @@
-package com.dormhub.service;
+package com.dormhub.service.Impl;
 
 import java.sql.Date;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.List;
 import com.dormhub.dao.ResidentDAO;
 import com.dormhub.dao.impl.ResidentDAOImpl;
 import com.dormhub.model.Resident;
+import com.dormhub.service.ResidentService;
 
 public class ResidentServiceImpl implements ResidentService {
     private final ResidentDAO residentDAO;
