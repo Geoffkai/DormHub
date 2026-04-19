@@ -1,0 +1,12 @@
+# Maven build output
+/target/
+
+# Compiled Java bytecode
+*.class
+
+# IntelliJ local workspace state
+.idea/workspace.xml
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
