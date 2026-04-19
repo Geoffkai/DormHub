@@ -12,19 +12,16 @@ public class BackgroundPanel extends JPanel {
     public BackgroundPanel(String imagePath, boolean keepAspectRatio) {
         this.keepAspectRatio = keepAspectRatio;
         if (imagePath != null && !imagePath.isEmpty()) {
-            background = new ImageIcon(imagePath).getImage();
+            background = ImageResources.loadImage(imagePath);
         }
         setOpaque(false);
     }
 
     public void setBackground(String imagePath) {
         if (imagePath != null && !imagePath.isEmpty()) {
-            background = new ImageIcon(imagePath).getImage();
+            background = ImageResources.loadImage(imagePath);
             repaint();
         }
-
-        background = new ImageIcon(imagePath).getImage();
-        repaint();
     }
     @Override
     protected void paintComponent(Graphics g) {

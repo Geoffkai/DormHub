@@ -31,18 +31,18 @@ public class ContentPanel extends JPanel {
         setOpaque(false);
 
         // Action buttons
-        ViewBtn = makeButton("src/img/View all.png", (int) 375.1, (int) 120.1, 238, 60);
-        AddBtn = makeButton("src/img/Add.png", (int) 688.3, (int) 120.1, 238, 60);
-        UpdateBtn = makeButton("src/img/Update.png", (int) 1001.3, (int) 120.1, 238, 60);
-        DeleteBtn = makeButton("src/img/Delete.png", (int) 1314.1, (int) 120.1, 238, 60);
-        ExportBtn = makeButton("src/img/Export.png", (int) 1626.8, (int) 120.1, 238, 60);
+        ViewBtn = makeButton("/img/View all.png", (int) 375.1, (int) 120.1, 238, 60);
+        AddBtn = makeButton("/img/Add.png", (int) 688.3, (int) 120.1, 238, 60);
+        UpdateBtn = makeButton("/img/Update.png", (int) 1001.3, (int) 120.1, 238, 60);
+        DeleteBtn = makeButton("/img/Delete.png", (int) 1314.1, (int) 120.1, 238, 60);
+        ExportBtn = makeButton("/img/Export.png", (int) 1626.8, (int) 120.1, 238, 60);
 
         // Search bar
         searchField = new JTextField(23);
         searchField.setPreferredSize(new Dimension(356, 31));
         searchField.setFont(new Font("Arial", Font.PLAIN, 20));
 
-        attributeComboBox = new JComboBox<>(new String[]{""});
+        attributeComboBox = new JComboBox<>(new String[] { "" });
         attributeComboBox.setPreferredSize(new Dimension(205, 31));
         attributeComboBox.setFont(new Font("Arial", Font.PLAIN, 20));
         attributeComboBox.setBackground(Color.WHITE);
@@ -73,7 +73,8 @@ public class ContentPanel extends JPanel {
         searchPanel.setBounds((int) 320.5, (int) 223, (int) 1599.5, (int) 58.6);
 
         // Table Model
-        String[] columnNames = {"Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program", "Move-in-date"};
+        String[] columnNames = { "Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program",
+                "Move-in-date" };
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -105,12 +106,11 @@ public class ContentPanel extends JPanel {
         table.setRowSorter(sorter);
 
         // Exit Button
-        ImageIcon exitIcon = new ImageIcon("src/img/ExitGreen.png");
+        ImageIcon exitIcon = ImageResources.loadIcon("/img/ExitGreen.png");
         JButton exitButton = new JButton(exitIcon);
         exitButton.setFocusPainted(false);
         exitButton.setBounds(1840, (int) 26.7, 50, 50);
         exitButton.addActionListener(e -> System.exit(0));
-
 
         // Dashboard panels
         TR.setBounds((int) 444.8, (int) 217.2, 534, 200);
@@ -123,16 +123,22 @@ public class ContentPanel extends JPanel {
         RO.setBackground(Color.WHITE);
 
         add(searchPanel);
-        add(TR); add(PDPR); add(RA); add(RO);
-        add(ViewBtn); add(AddBtn); add(UpdateBtn); add(DeleteBtn); add(ExportBtn);
+        add(TR);
+        add(PDPR);
+        add(RA);
+        add(RO);
+        add(ViewBtn);
+        add(AddBtn);
+        add(UpdateBtn);
+        add(DeleteBtn);
+        add(ExportBtn);
         add(exitButton);
-
 
         showDashboard(); // initial state
     }
 
     private JButton makeButton(String path, int x, int y, int w, int h) {
-        JButton btn = new JButton(new ImageIcon(path));
+        JButton btn = new JButton(ImageResources.loadIcon(path));
         btn.setBounds(x, y, w, h);
         return btn;
     }
@@ -154,37 +160,33 @@ public class ContentPanel extends JPanel {
 
     public void showResidents() {
         showManagerPanel(
-                new String[]{"Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program", "Move-in-date"},
-                "Residents"
-        );
+                new String[] { "Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program",
+                        "Move-in-date" },
+                "Residents");
     }
 
     public void showRooms() {
         showManagerPanel(
-                new String[]{"Room Number", "Room Type", "Capacity", "Current Occupancy"},
-                "Rooms"
-        );
+                new String[] { "Room Number", "Room Type", "Capacity", "Current Occupancy" },
+                "Rooms");
     }
 
     public void showAssignments() {
         showManagerPanel(
-                new String[]{"Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated"},
-                "Assignments"
-        );
+                new String[] { "Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated" },
+                "Assignments");
     }
 
     public void showPayments() {
         showManagerPanel(
-                new String[]{"Payment ID", "Resident ID", "Amount", "Payment Date", "Status"},
-                "Payments"
-        );
+                new String[] { "Payment ID", "Resident ID", "Amount", "Payment Date", "Status" },
+                "Payments");
     }
 
     public void showDormPass() {
         showManagerPanel(
-                new String[]{"Resident ID", "Reason", "Destination", "Date Applied", "Status"},
-                "DormPass"
-        );
+                new String[] { "Resident ID", "Reason", "Destination", "Date Applied", "Status" },
+                "DormPass");
     }
 
     private void showManagerPanel(String[] columnNames, String label) {
@@ -215,7 +217,8 @@ public class ContentPanel extends JPanel {
     // Rebind button actions every time the active panel changes.
     // Always remove old listeners first, or one click may trigger actions
     // from previously opened panels (Residents, Rooms, Payments, etc.).
-    // Replace the placeholder listeners below with the real CRUD/search/export logic.
+    // Replace the placeholder listeners below with the real CRUD/search/export
+    // logic.
     private void bindPlaceholderActions(String label) {
         // Helper for clearing previously attached ActionListeners from a button
         // before assigning the current panel's behavior.

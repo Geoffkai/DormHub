@@ -12,13 +12,13 @@ public class GUIMain {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setSize(screenSize.width, screenSize.height);
 
-        BackgroundPanel loginPage = new BackgroundPanel("src/img/Login.png");
+        BackgroundPanel loginPage = new BackgroundPanel("/img/Login.png");
         loginPage.setBounds(0, 0, screenSize.width, screenSize.height);
         loginPage.setLayout(null);
         loginPage.setOpaque(false);
 
         // Exit Button
-        ImageIcon exitIcon = new ImageIcon("src/img/Exit.png");
+        ImageIcon exitIcon = ImageResources.loadIcon("/img/Exit.png");
         JButton exitButton = new JButton(exitIcon);
         exitButton.setFocusPainted(false);
         exitButton.setBounds(1812, (int) 71.1, 62, 62);
@@ -26,7 +26,7 @@ public class GUIMain {
         loginPage.add(exitButton);
 
         // Login Button
-        ImageIcon loginIcon = new ImageIcon("src/img/LoginBtn.png");
+        ImageIcon loginIcon = ImageResources.loadIcon("/img/LoginBtn.png");
         JButton loginButton = new JButton(loginIcon);
         loginButton.setFocusPainted(false);
         loginButton.setBackground(Color.WHITE);
@@ -36,7 +36,7 @@ public class GUIMain {
 
         // TextField
         JTextField usernameField = new JTextField();
-        usernameField.setBounds((int) 1203.9, (int) 452.8, (int) 558.4, (int)60.5);
+        usernameField.setBounds((int) 1203.9, (int) 452.8, (int) 558.4, (int) 60.5);
         usernameField.setFont(new Font("Arial", Font.PLAIN, 18));
         usernameField.setBorder(BorderFactory.createEmptyBorder());
         usernameField.setOpaque(false);
@@ -44,7 +44,7 @@ public class GUIMain {
 
         // PasswordField
         JPasswordField passwordField = new JPasswordField();
-        passwordField.setBounds((int) 1203.9, 613, (int) 558.4, (int)60.5);
+        passwordField.setBounds((int) 1203.9, 613, (int) 558.4, (int) 60.5);
         passwordField.setFont(new Font("Arial", Font.PLAIN, 18));
         passwordField.setBorder(BorderFactory.createEmptyBorder());
         passwordField.setOpaque(false);
