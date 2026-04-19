@@ -79,7 +79,7 @@ public class RoomDAOImpl implements RoomDAO {
     }
 
     @Override
-    public Room findById(int roomNo) {
+    public Room findByRoomNo(int roomNo) {
         String sql = "SELECT * FROM room WHERE room_number = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

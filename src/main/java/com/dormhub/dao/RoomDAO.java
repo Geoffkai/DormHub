@@ -11,7 +11,7 @@ public interface RoomDAO {
 
     void delete(int roomNo);
 
-    Room findById(int roomNo);
+    Room findByRoomNo(int roomNo);
 
     List<Room> findByRoomType(String roomType);
 
