@@ -1,12 +1,28 @@
-# Maven build output
-/target/
+# Build output
+target/
+out/
 
-# Compiled Java bytecode
+# Compiled Java bytecode and logs
 *.class
+*.log
 
-# IntelliJ local workspace state
-.idea/workspace.xml
+# Maven and test outputs
+maven-status/
+surefire-reports/
 
-# OS/editor noise
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# OS files
 .DS_Store
 Thumbs.db
+
+# Generated upgrade artifacts
+.github/java-upgrade/
