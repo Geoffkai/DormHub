@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 import com.dormhub.model.Resident;
 import com.dormhub.service.ResidentService;
-import com.dormhub.service.ResidentServiceImpl;
+import com.dormhub.service.Impl.ResidentServiceImpl;
 
 public class CLIApp {
     private final Scanner scanner;

@@ -1,7 +1,7 @@
 package com.dormhub.controller;
 
+import com.dormhub.service.Impl.ResidentServiceImpl;
 import com.dormhub.service.ResidentService;
-import com.dormhub.service.ResidentServiceImpl;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
