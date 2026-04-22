@@ -1,7 +1,9 @@
 package com.dormhub.view;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import javax.swing.JPanel;
 
 public class PanelsHandler extends JPanel {
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -21,43 +23,48 @@ public class PanelsHandler extends JPanel {
         contentPanel = new ContentPanel(screenSize);
 
         // Side panels
-        BackgroundPanel p1 = new BackgroundPanel("/img/10w.png", false);
-        p1.setBounds(0, (int) 217.2, 320, 144);
-        p1.setOpaque(false);
-        addHoverEffect(p1, "/img/10.png", "/img/10w.png", "/img/ResM.png", () -> contentPanel.showResidents());
+        BackgroundPanel residentMngrBtn = new BackgroundPanel("/img/10w.png", false);
+        residentMngrBtn.setBounds(0, (int) 217.2, 320, 144);
+        residentMngrBtn.setOpaque(false);
+        addHoverEffect(residentMngrBtn, "/img/10.png", "/img/10w.png", "/img/ResM.png",
+                () -> contentPanel.showResidents());
 
-        BackgroundPanel p2 = new BackgroundPanel("/img/11w.png", false);
-        p2.setBounds(0, (int) 361.3, 320, 144);
-        p2.setOpaque(false);
-        addHoverEffect(p2, "/img/11.png", "/img/11w.png", "/img/RoomM.png", () -> contentPanel.showRooms());
+        BackgroundPanel roomMngrBtn = new BackgroundPanel("/img/11w.png", false);
+        roomMngrBtn.setBounds(0, (int) 361.3, 320, 144);
+        roomMngrBtn.setOpaque(false);
+        addHoverEffect(roomMngrBtn, "/img/11.png", "/img/11w.png", "/img/RoomM.png", () -> contentPanel.showRooms());
 
-        BackgroundPanel p3 = new BackgroundPanel("/img/12w.png", false);
-        p3.setBounds(0, (int) 505.4, 320, 144);
-        p3.setOpaque(false);
-        addHoverEffect(p3, "/img/12.png", "/img/12w.png", "/img/AssM.png", () -> contentPanel.showAssignments());
+        BackgroundPanel assignmentMngrBtn = new BackgroundPanel("/img/12w.png", false);
+        assignmentMngrBtn.setBounds(0, (int) 505.4, 320, 144);
+        assignmentMngrBtn.setOpaque(false);
+        addHoverEffect(assignmentMngrBtn, "/img/12.png", "/img/12w.png", "/img/AssM.png",
+                () -> contentPanel.showAssignments());
 
-        BackgroundPanel p4 = new BackgroundPanel("/img/13w.png", false);
-        p4.setBounds(0, (int) 649.5, 320, 144);
-        p4.setOpaque(false);
-        addHoverEffect(p4, "/img/13.png", "/img/13w.png", "/img/PayM.png", () -> contentPanel.showPayments());
+        BackgroundPanel paymentMngrBtn = new BackgroundPanel("/img/13w.png", false);
+        paymentMngrBtn.setBounds(0, (int) 649.5, 320, 144);
+        paymentMngrBtn.setOpaque(false);
+        addHoverEffect(paymentMngrBtn, "/img/13.png", "/img/13w.png", "/img/PayM.png",
+                () -> contentPanel.showPayments());
 
-        BackgroundPanel p5 = new BackgroundPanel("/img/14w.png", false);
-        p5.setBounds(0, (int) 793.9, 320, 144);
-        p5.setOpaque(false);
-        addHoverEffect(p5, "/img/14.png", "/img/14w.png", "/img/DormM.png", () -> contentPanel.showDormPass());
+        BackgroundPanel dormPassMngrBtn = new BackgroundPanel("/img/14w.png", false);
+        dormPassMngrBtn.setBounds(0, (int) 793.9, 320, 144);
+        dormPassMngrBtn.setOpaque(false);
+        addHoverEffect(dormPassMngrBtn, "/img/14.png", "/img/14w.png", "/img/DormM.png",
+                () -> contentPanel.showDormPass());
 
-        BackgroundPanel p6 = new BackgroundPanel("/img/15w.png", false); // Dashboard
-        p6.setBounds(0, (int) 936.1, 320, 144);
-        p6.setOpaque(false);
-        addHoverEffect(p6, "/img/15.png", "/img/15w.png", "/img/MngDshB.png", () -> contentPanel.showDashboard());
+        BackgroundPanel dashboardBtn = new BackgroundPanel("/img/15w.png", false); // Dashboard
+        dashboardBtn.setBounds(0, (int) 936.1, 320, 144);
+        dashboardBtn.setOpaque(false);
+        addHoverEffect(dashboardBtn, "/img/15.png", "/img/15w.png", "/img/MngDshB.png",
+                () -> contentPanel.showDashboard());
 
         mgr.add(contentPanel);
-        mgr.add(p6);
-        mgr.add(p5);
-        mgr.add(p4);
-        mgr.add(p3);
-        mgr.add(p2);
-        mgr.add(p1); // p1 on top
+        mgr.add(dashboardBtn);
+        mgr.add(dormPassMngrBtn);
+        mgr.add(paymentMngrBtn);
+        mgr.add(assignmentMngrBtn);
+        mgr.add(roomMngrBtn);
+        mgr.add(residentMngrBtn); // residentMngrBtn on top
         add(mgr);
     }
 
