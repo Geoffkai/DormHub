@@ -1,3 +1,5 @@
+package com.dormhub.view;
+
 import java.awt.*;
 import javax.swing.*;
 
@@ -23,6 +25,7 @@ public class BackgroundPanel extends JPanel {
             repaint();
         }
     }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

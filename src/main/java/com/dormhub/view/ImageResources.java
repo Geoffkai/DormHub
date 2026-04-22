@@ -1,3 +1,5 @@
+package com.dormhub.view;
+
 import java.awt.Image;
 import java.net.URL;
 
