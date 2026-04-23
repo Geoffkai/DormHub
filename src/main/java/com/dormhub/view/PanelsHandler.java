@@ -13,6 +13,13 @@ public class PanelsHandler extends JPanel {
     // Content changes on right side
     ContentPanel contentPanel;
 
+    private Runnable onResidentsSelected;
+    private Runnable onRoomsSelected;
+    private Runnable onAssignmentsSelected;
+    private Runnable onPaymentsSelected;
+    private Runnable onDormPassSelected;
+    private Runnable onDashboardSelected;
+
     public PanelsHandler() {
         setLayout(null);
         setBounds(0, 0, screenSize.width, screenSize.height);
@@ -27,36 +34,66 @@ public class PanelsHandler extends JPanel {
         residentMngrBtn.setBounds(0, (int) 217.2, 320, 144);
         residentMngrBtn.setOpaque(false);
         addHoverEffect(residentMngrBtn, "/img/10.png", "/img/10w.png", "/img/ResM.png",
-                () -> contentPanel.showResidents());
+                () -> {
+                    contentPanel.showResidents();
+                    if (onResidentsSelected != null) {
+                        onResidentsSelected.run();
+                    }
+                });
 
         BackgroundPanel roomMngrBtn = new BackgroundPanel("/img/11w.png", false);
         roomMngrBtn.setBounds(0, (int) 361.3, 320, 144);
         roomMngrBtn.setOpaque(false);
-        addHoverEffect(roomMngrBtn, "/img/11.png", "/img/11w.png", "/img/RoomM.png", () -> contentPanel.showRooms());
+        addHoverEffect(roomMngrBtn, "/img/11.png", "/img/11w.png", "/img/RoomM.png", () -> {
+            contentPanel.showRooms();
+            if (onRoomsSelected != null) {
+                onRoomsSelected.run();
+            }
+        });
 
         BackgroundPanel assignmentMngrBtn = new BackgroundPanel("/img/12w.png", false);
         assignmentMngrBtn.setBounds(0, (int) 505.4, 320, 144);
         assignmentMngrBtn.setOpaque(false);
         addHoverEffect(assignmentMngrBtn, "/img/12.png", "/img/12w.png", "/img/AssM.png",
-                () -> contentPanel.showAssignments());
+                () -> {
+                    contentPanel.showAssignments();
+                    if (onAssignmentsSelected != null) {
+                        onAssignmentsSelected.run();
+                    }
+                });
 
         BackgroundPanel paymentMngrBtn = new BackgroundPanel("/img/13w.png", false);
         paymentMngrBtn.setBounds(0, (int) 649.5, 320, 144);
         paymentMngrBtn.setOpaque(false);
         addHoverEffect(paymentMngrBtn, "/img/13.png", "/img/13w.png", "/img/PayM.png",
-                () -> contentPanel.showPayments());
+                () -> {
+                    contentPanel.showPayments();
+                    if (onPaymentsSelected != null) {
+                        onPaymentsSelected.run();
+                    }
+                });
 
         BackgroundPanel dormPassMngrBtn = new BackgroundPanel("/img/14w.png", false);
         dormPassMngrBtn.setBounds(0, (int) 793.9, 320, 144);
         dormPassMngrBtn.setOpaque(false);
         addHoverEffect(dormPassMngrBtn, "/img/14.png", "/img/14w.png", "/img/DormM.png",
-                () -> contentPanel.showDormPass());
+                () -> {
+                    contentPanel.showDormPass();
+                    if (onDormPassSelected != null) {
+                        onDormPassSelected.run();
+                    }
+                });
 
         BackgroundPanel dashboardBtn = new BackgroundPanel("/img/15w.png", false); // Dashboard
         dashboardBtn.setBounds(0, (int) 936.1, 320, 144);
         dashboardBtn.setOpaque(false);
         addHoverEffect(dashboardBtn, "/img/15.png", "/img/15w.png", "/img/MngDshB.png",
-                () -> contentPanel.showDashboard());
+                () -> {
+                    contentPanel.showDashboard();
+                    if (onDashboardSelected != null) {
+                        onDashboardSelected.run();
+                    }
+                });
 
         mgr.add(contentPanel);
         mgr.add(dashboardBtn);
@@ -66,6 +103,30 @@ public class PanelsHandler extends JPanel {
         mgr.add(roomMngrBtn);
         mgr.add(residentMngrBtn); // residentMngrBtn on top
         add(mgr);
+    }
+
+    public void setOnResidentsSelected(Runnable onResidentsSelected) {
+        this.onResidentsSelected = onResidentsSelected;
+    }
+
+    public void setOnRoomsSelected(Runnable onRoomsSelected) {
+        this.onRoomsSelected = onRoomsSelected;
+    }
+
+    public void setOnAssignmentsSelected(Runnable onAssignmentsSelected) {
+        this.onAssignmentsSelected = onAssignmentsSelected;
+    }
+
+    public void setOnPaymentsSelected(Runnable onPaymentsSelected) {
+        this.onPaymentsSelected = onPaymentsSelected;
+    }
+
+    public void setOnDormPassSelected(Runnable onDormPassSelected) {
+        this.onDormPassSelected = onDormPassSelected;
+    }
+
+    public void setOnDashboardSelected(Runnable onDashboardSelected) {
+        this.onDashboardSelected = onDashboardSelected;
     }
 
     private void addHoverEffect(BackgroundPanel panel, String hoverImg, String defaultImg, String bgImg,
