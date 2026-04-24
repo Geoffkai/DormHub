@@ -46,7 +46,7 @@ public class RoomServiceImpl implements RoomService {
             throw new IllegalArgumentException("Room must be valid.");
         }
 
-        if (roomDAO.findByRoomNo(roomNo) != null) {
+        if (roomDAO.findByRoomNo(roomNo) == null) {
             throw new IllegalArgumentException("Room not found: " + roomNo);
         }
 
