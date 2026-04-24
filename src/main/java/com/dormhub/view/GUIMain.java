@@ -55,7 +55,24 @@ public class GUIMain {
         passwordField.setOpaque(false);
         loginPage.add(passwordField);
 
-         // Error Login Text
+        // Authentication process here
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword()); // dont use getText() for passwords
+        // Temporary, add logic later
+        loginButton.addActionListener(e -> {
+            PanelsHandler panelsHandler = new PanelsHandler();
+
+            ContentPanel contentPanel = panelsHandler.getContentPanel();
+
+            GUIController guiController = new GUIController(new ResidentServiceImpl(), new RoomServiceImpl(),
+                    new RoomAssignmentServiceImpl(), new PaymentServiceImpl(), new DormPassServiceImpl(), panelsHandler,
+                    contentPanel);
+            frame.setContentPane(panelsHandler);
+            frame.validate();
+            frame.repaint();
+        });
+
+        // Error Login Text
         JLabel Error = new JLabel("Invalid credentials. Try again.");
         Error.setBounds((int) 1145.5, (int) 691.7, (int) 470.1, (int) 38.6);
         Error.setFont(new Font("Arial", Font.BOLD, 16));
