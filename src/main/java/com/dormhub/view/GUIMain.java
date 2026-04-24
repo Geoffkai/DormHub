@@ -1,24 +1,10 @@
 package com.dormhub.view;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Toolkit;
+import javax.swing.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import com.dormhub.controller.LoginController;
 
-import com.dormhub.controller.GUIController;
-import com.dormhub.service.Impl.DormPassServiceImpl;
-import com.dormhub.service.Impl.PaymentServiceImpl;
-import com.dormhub.service.Impl.ResidentServiceImpl;
-import com.dormhub.service.Impl.RoomAssignmentServiceImpl;
-import com.dormhub.service.Impl.RoomServiceImpl;
+import java.awt.*;
 
 public class GUIMain {
     public static void main(String[] args) {
@@ -93,6 +79,10 @@ public class GUIMain {
         Error.setForeground(Color.WHITE);
         Error.setVisible(false);
         loginPage.add(Error);
+
+        // Authentication process here
+        LoginController loginController = new LoginController(frame, usernameField, passwordField, Error);
+        loginButton.addActionListener(e -> loginController.handleLogin());
 
         frame.setContentPane(loginPage);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);

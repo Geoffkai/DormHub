@@ -105,6 +105,10 @@ public class PanelsHandler extends JPanel {
         add(mgr);
     }
 
+    public ContentPanel getContentPanel() {
+        return contentPanel;
+    }
+
     public void setOnResidentsSelected(Runnable onResidentsSelected) {
         this.onResidentsSelected = onResidentsSelected;
     }
