@@ -49,14 +49,7 @@ public class GUIController {
     }
 
     private void bindResidentActions() {
-        contentPanel.setViewAction(e -> {
-            try {
-                List<Resident> residents = residentService.findAllResidents();
-                contentPanel.showResidentsTable(residents);
-            } catch (Exception ex) {
-                contentPanel.showMessage("Failed to load residents: " + ex.getMessage());
-            }
-        });
+        contentPanel.setViewAction(e -> loadResidents());
 
         // contentPanel.setAddAction(e -> {
         // try {
@@ -76,41 +69,30 @@ public class GUIController {
                 int residentId = Integer.parseInt(input);
                 residentService.deleteResident(residentId);
 
-                List<Resident> residents = residentService.findAllResidents();
-                contentPanel.showResidentsTable(residents);
+                loadResidents();
                 contentPanel.showMessage("Resident deleted successfully.");
             } catch (Exception ex) {
                 contentPanel.showMessage("Delete failed: " + ex.getMessage());
             }
         });
+
+        loadResidents();
     }
 
     public void bindRoomActions() {
-        contentPanel.setViewAction(e -> {
-            try {
-                List<Room> rooms = roomService.findAllRooms();
-                contentPanel.showRoomsTable(rooms);
-            } catch (Exception ex) {
-                contentPanel.showMessage("Failed to load rooms: " + ex.getMessage());
-            }
-        });
+        contentPanel.setViewAction(e -> loadRooms());
         // contentPanel.setAddAction(e -> roomService.addRoom(roomNo, roomType,
         // capacity, currentOccupancy));
         // contentPanel.setUpdateAction(e -> roomService.updateRoom(roomNo, roomType,
         // capacity, currentOccupancy));
         // contentPanel.setDeleteAction(e -> roomService.deleteRoom(roomNo));
         // contentPanel.setSearchAction(e -> roomService.findByRoomNo(roomNo));
+
+        loadRooms();
     }
 
     public void bindAssignmentActions() {
-        contentPanel.setViewAction(e -> {
-            try {
-                List<RoomAssignment> assignments = roomAssignmentService.findAllAssignments();
-                contentPanel.showAssignmentsTable(assignments);
-            } catch (Exception ex) {
-                contentPanel.showMessage("Failed to load assignments: " + ex.getMessage());
-            }
-        });
+        contentPanel.setViewAction(e -> loadAssignments());
         // contentPanel.setAddAction(e ->
         // roomAssignmentService.addRoomAssignment(assignmentId,
         // residentId, roomId, dateAssigned, dateVacated));
@@ -121,43 +103,80 @@ public class GUIController {
         // roomAssignmentService.deleteRoomAssignment(assignmentId));
         // contentPanel.setSearchAction(e ->
         // roomAssignmentService.findById(assignmentId));
+
+        loadAssignments();
     }
 
     public void bindPaymentActions() {
-        contentPanel.setViewAction(e -> {
-            try {
-                List<Payment> payments = paymentService.findAllPayments();
-                contentPanel.showPaymentsTable(payments);
-            } catch (Exception ex) {
-                contentPanel.showMessage("Failed to load payments: " + ex.getMessage());
-            }
-        });
+        contentPanel.setViewAction(e -> loadPayments());
         // contentPanel.setAddAction(e -> paymentService.addPayment(paymentId,
         // residentId, amount, paymentDate, method, status));
         // contentPanel.setUpdateAction(e -> paymentService.updatePayment(paymentId,
         // residentId, amount, paymentDate, method, status));
         // contentPanel.setDeleteAction(e -> paymentService.deletePayment(paymentId));
         // contentPanel.setSearchAction(e -> paymentService.findById(paymentId));
+
+        loadPayments();
     }
 
     public void bindDormPassActions() {
-        contentPanel.setViewAction(e -> {
-            try {
-                List<DormPass> dormPasses = dormPassService.findAllDormPasses();
-                contentPanel.showDormPassesTable(dormPasses);
-            } catch (Exception ex) {
-                contentPanel.showMessage("Failed to load dorm passes: " + ex.getMessage());
-            }
-        });
+        contentPanel.setViewAction(e -> loadDormPasses());
         // contentPanel.setAddAction(e -> dormPassService.addDormPass(passId,
         // residentId, type, reason, destination, dateApplied, status));
         // contentPanel.setUpdateAction(e -> dormPassService.updateDormPass(passId,
         // residentId, type, reason, destination, dateApplied, status));
         // contentPanel.setDeleteAction(e -> dormPassService.deleteDormPass(passId));
         // contentPanel.setSearchAction(e -> dormPassService.findById(passId));
+
+        loadDormPasses();
     }
 
     public void bindDashboardActions() {
         // Dashboard currently has no active CRUD bindings.
+    }
+
+    private void loadResidents() {
+        try {
+            List<Resident> residents = residentService.findAllResidents();
+            contentPanel.showResidentsTable(residents);
+        } catch (Exception ex) {
+            contentPanel.showMessage("Failed to load residents: " + ex.getMessage());
+        }
+    }
+
+    private void loadRooms() {
+        try {
+            List<Room> rooms = roomService.findAllRooms();
+            contentPanel.showRoomsTable(rooms);
+        } catch (Exception ex) {
+            contentPanel.showMessage("Failed to load rooms: " + ex.getMessage());
+        }
+    }
+
+    private void loadAssignments() {
+        try {
+            List<RoomAssignment> assignments = roomAssignmentService.findAllAssignments();
+            contentPanel.showAssignmentsTable(assignments);
+        } catch (Exception ex) {
+            contentPanel.showMessage("Failed to load assignments: " + ex.getMessage());
+        }
+    }
+
+    private void loadPayments() {
+        try {
+            List<Payment> payments = paymentService.findAllPayments();
+            contentPanel.showPaymentsTable(payments);
+        } catch (Exception ex) {
+            contentPanel.showMessage("Failed to load payments: " + ex.getMessage());
+        }
+    }
+
+    private void loadDormPasses() {
+        try {
+            List<DormPass> dormPasses = dormPassService.findAllDormPasses();
+            contentPanel.showDormPassesTable(dormPasses);
+        } catch (Exception ex) {
+            contentPanel.showMessage("Failed to load dorm passes: " + ex.getMessage());
+        }
     }
 }
