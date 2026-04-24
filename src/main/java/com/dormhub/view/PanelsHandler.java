@@ -153,4 +153,8 @@ public class PanelsHandler extends JPanel {
             }
         });
     }
+
+    public ContentPanel getContentPanel() {
+        return contentPanel;
+    }
 }

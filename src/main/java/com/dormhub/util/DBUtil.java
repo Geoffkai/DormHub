@@ -7,15 +7,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
 public final class DBUtil {
-    private static final String DEFAULT_URL =
-            "jdbc:mysql://localhost:3306/dormhub?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC";
-    private static final String DEFAULT_USER = "root";
+    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/dormhub?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC";
+    private static final String DEFAULT_USER = "";
     private static final String DEFAULT_PASSWORD = "";
     private static final String PROPERTIES_RESOURCE = "db.properties";
     private static final String SCHEMA_RESOURCE = "/com/dormhub/db/dormhub.sql";
@@ -43,6 +44,13 @@ public final class DBUtil {
                 return;
             }
 
+            // If the core tables already exist, skip schema import to avoid
+            // "Table already exists" errors and duplicate seed data.
+            if (hasCoreTables(connection)) {
+                schemaInitialized = true;
+                return;
+            }
+
             String schemaSql = loadSchemaScript();
             try (Statement statement = connection.createStatement()) {
                 for (String sql : splitStatements(schemaSql)) {
@@ -51,6 +59,23 @@ public final class DBUtil {
             }
 
             schemaInitialized = true;
+        }
+    }
+
+    private static boolean hasCoreTables(Connection connection) throws SQLException {
+        return tableExists(connection, "room")
+                && tableExists(connection, "resident")
+                && tableExists(connection, "room_assignments")
+                && tableExists(connection, "payment")
+                && tableExists(connection, "dorm_pass");
+    }
+
+    private static boolean tableExists(Connection connection, String tableName) throws SQLException {
+        DatabaseMetaData metadata = connection.getMetaData();
+        String catalog = connection.getCatalog();
+
+        try (ResultSet result = metadata.getTables(catalog, null, tableName, new String[] { "TABLE" })) {
+            return result.next();
         }
     }
 
