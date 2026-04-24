@@ -214,46 +214,6 @@ public class ContentPanel extends JPanel {
                 "DormPass");
     }
 
-    public void showRoomsTable(List<Room> rooms) {
-        tableModel.setRowCount(0);
-        for (Room room : rooms) {
-            tableModel.addRow(new Object[] {
-                room.getRoomNo(), room.getRoomType(), room.getCapacity(), room.getCurrentOccupancy()
-            });
-        }
-    }
-
-    public void showAssignmentsTable(List<RoomAssignment> assignments) {
-        tableModel.setRowCount(0);
-        for (RoomAssignment assignment : assignments) {
-            tableModel.addRow(new Object[] {
-                assignment.getAssignmentId(), assignment.getResidentId(), assignment.getRoomId(),
-                assignment.getDateAssigned(), assignment.getDateVacated()
-            });
-        }
-    }
-
-    public void showPaymentsTable(List<Payment> payments) {
-        tableModel.setRowCount(0);
-        for (Payment payment : payments) {
-            tableModel.addRow(new Object[] {
-                payment.getPaymentId(), payment.getResidentId(), payment.getAmount(),
-                payment.getPaymentDate(), payment.getStatus()
-            });
-        }
-    }
-
-    public void showDormPassesTable(List<DormPass> dormPasses) {
-        tableModel.setRowCount(0);
-        for (DormPass dormPass : dormPasses) {
-            tableModel.addRow(new Object[] {
-                dormPass.getPassId(), dormPass.getResidentId(), dormPass.getType(),
-                dormPass.getReason(), dormPass.getDestination(),
-                dormPass.getDateApplied(), dormPass.getStatus()
-            });
-        }
-    }
-
     private void showManagerPanel(String[] columnNames, String label) {
         TR.setVisible(false);
         PDPR.setVisible(false);
