@@ -1,6 +1,9 @@
 package com.dormhub.view;
 
 import javax.swing.*;
+
+import com.dormhub.controller.LoginController;
+
 import java.awt.*;
 
 public class GUIMain {
@@ -52,23 +55,17 @@ public class GUIMain {
         passwordField.setOpaque(false);
         loginPage.add(passwordField);
 
-        // Authentication process here
-        String username = usernameField.getText();
-        String password = new String(passwordField.getPassword()); // dont use getText() for passwords
-        // Temporary, add logic later
-        loginButton.addActionListener(e -> {
-            frame.setContentPane(new PanelsHandler());
-            frame.validate();
-            frame.repaint();
-        });
-
-        // Error Login Text
+         // Error Login Text
         JLabel Error = new JLabel("Invalid credentials. Try again.");
         Error.setBounds((int) 1145.5, (int) 691.7, (int) 470.1, (int) 38.6);
         Error.setFont(new Font("Arial", Font.BOLD, 16));
         Error.setForeground(Color.WHITE);
         Error.setVisible(false);
         loginPage.add(Error);
+
+        // Authentication process here
+        LoginController loginController = new LoginController(frame, usernameField, passwordField, Error);
+        loginButton.addActionListener(e -> loginController.handleLogin());
 
         frame.setContentPane(loginPage);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);

@@ -23,7 +23,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
+import com.dormhub.model.DormPass;
+import com.dormhub.model.Payment;
 import com.dormhub.model.Resident;
+import com.dormhub.model.Room;
+import com.dormhub.model.RoomAssignment;
 
 public class ContentPanel extends JPanel {
 
@@ -208,6 +212,46 @@ public class ContentPanel extends JPanel {
         showManagerPanel(
                 new String[] { "Resident ID", "Reason", "Destination", "Date Applied", "Status" },
                 "DormPass");
+    }
+
+    public void showRoomsTable(List<Room> rooms) {
+        tableModel.setRowCount(0);
+        for (Room room : rooms) {
+            tableModel.addRow(new Object[] {
+                room.getRoomNo(), room.getRoomType(), room.getCapacity(), room.getCurrentOccupancy()
+            });
+        }
+    }
+
+    public void showAssignmentsTable(List<RoomAssignment> assignments) {
+        tableModel.setRowCount(0);
+        for (RoomAssignment assignment : assignments) {
+            tableModel.addRow(new Object[] {
+                assignment.getAssignmentId(), assignment.getResidentId(), assignment.getRoomId(),
+                assignment.getDateAssigned(), assignment.getDateVacated()
+            });
+        }
+    }
+
+    public void showPaymentsTable(List<Payment> payments) {
+        tableModel.setRowCount(0);
+        for (Payment payment : payments) {
+            tableModel.addRow(new Object[] {
+                payment.getPaymentId(), payment.getResidentId(), payment.getAmount(),
+                payment.getPaymentDate(), payment.getStatus()
+            });
+        }
+    }
+
+    public void showDormPassesTable(List<DormPass> dormPasses) {
+        tableModel.setRowCount(0);
+        for (DormPass dormPass : dormPasses) {
+            tableModel.addRow(new Object[] {
+                dormPass.getPassId(), dormPass.getResidentId(), dormPass.getType(),
+                dormPass.getReason(), dormPass.getDestination(),
+                dormPass.getDateApplied(), dormPass.getStatus()
+            });
+        }
     }
 
     private void showManagerPanel(String[] columnNames, String label) {

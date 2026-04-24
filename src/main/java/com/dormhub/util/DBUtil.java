@@ -14,7 +14,7 @@ import java.util.Properties;
 
 public final class DBUtil {
     private static final String DEFAULT_URL =
-            "jdbc:mysql://localhost:3306/dormhub?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC";
+            "jdbc:mysql://localhost:3306/dormhub?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     private static final String DEFAULT_USER = "root";
     private static final String DEFAULT_PASSWORD = "";
     private static final String PROPERTIES_RESOURCE = "db.properties";
