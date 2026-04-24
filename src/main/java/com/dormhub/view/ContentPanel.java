@@ -1,10 +1,29 @@
 package com.dormhub.view;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.util.List;
+
+import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
-import java.awt.*;
+
+import com.dormhub.model.Resident;
 
 public class ContentPanel extends JPanel {
 
@@ -243,5 +262,45 @@ public class ContentPanel extends JPanel {
         for (java.awt.event.ActionListener listener : button.getActionListeners()) {
             button.removeActionListener(listener);
         }
+    }
+
+    public void setViewAction(ActionListener listener) {
+        resetActionListeners(ViewBtn);
+        ViewBtn.addActionListener(listener);
+    }
+
+    public void setAddAction(ActionListener listener) {
+        resetActionListeners(AddBtn);
+        AddBtn.addActionListener(listener);
+    }
+
+    public void setUpdateAction(ActionListener listener) {
+        resetActionListeners(UpdateBtn);
+        UpdateBtn.addActionListener(listener);
+    }
+
+    public void setDeleteAction(ActionListener listener) {
+        resetActionListeners(ViewBtn);
+        DeleteBtn.addActionListener(listener);
+    }
+
+    public void setSearchAction(ActionListener listener) {
+        resetActionListeners(ViewBtn);
+        searchBtn.addActionListener(listener);
+    }
+
+    public void showResidentsTable(List<Resident> residents) {
+        tableModel.setRowCount(0);
+        for (Resident resident : residents) {
+            tableModel.addRow(new Object[] {
+                    resident.getResidentId(), resident.getFirstName(), resident.getLastName(), resident.getContactNo(),
+                    resident.getYearLevel(), resident.getProgram(), resident.getMoveInDate()
+
+            });
+        }
+    }
+
+    public void showMessage(String message) {
+        JOptionPane.showMessageDialog(this, message);
     }
 }
