@@ -2,13 +2,12 @@ package com.dormhub.controller;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import com.dormhub.model.DormPass;
-import com.dormhub.model.Payment;
-import com.dormhub.model.Resident;
-import com.dormhub.model.Room;
-import com.dormhub.model.RoomAssignment;
 import com.dormhub.service.DormPassService;
 import com.dormhub.service.PaymentService;
 import com.dormhub.service.ResidentService;
@@ -35,7 +34,6 @@ public class GUIController {
     private final PaymentService paymentService;
     private final RoomAssignmentService roomAssignmentService;
 
-    private final PanelsHandler panelsHandler;
     private final ContentPanel contentPanel;
 
     public GUIController(ResidentService residentService, RoomService roomService,
@@ -46,7 +44,6 @@ public class GUIController {
         this.roomAssignmentService = roomAssignmentService;
         this.paymentService = paymentService;
         this.dormPassService = dormPassService;
-        this.panelsHandler = panelsHandler;
         this.contentPanel = contentPanel;
 
         panelsHandler.setOnResidentsSelected(this::bindResidentActions);
@@ -62,30 +59,18 @@ public class GUIController {
     private void bindResidentActions() {
         contentPanel.setViewAction(e -> loadResidents());
 
-        contentPanel.setAddAction(e -> {
-            try {
-                ResidentFormData formData = ResidentFormDialog.showAddDialog(contentPanel);
-                if (formData == null) {
-                    return;
-                }
+        configureAddAction(
+            () -> ResidentFormDialog.showAddDialog(contentPanel),
+                formData -> saveResident(formData, false),
+                this::loadResidents,
+                "Resident Added",
+                "Resident added successfully.");
 
-                saveResident(formData, false);
-                loadResidents();
-                contentPanel.showSuccessMessage("Resident Added", "Resident added successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Add Failed", "Add failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setUpdateAction(e -> {
-            Resident selectedResident = contentPanel.getSelectedResident();
-            if (selectedResident == null) {
-                contentPanel.showWarningMessage("Update Resident", "Select a resident to update.");
-                return;
-            }
-
-            try {
-                ResidentFormData formData = ResidentFormDialog.showUpdateDialog(
+        configureUpdateAction(
+                contentPanel::getSelectedResident,
+                "Update Resident",
+                "Select a resident to update.",
+                selectedResident -> ResidentFormDialog.showUpdateDialog(
                         contentPanel,
                         new ResidentFormData(
                                 String.valueOf(selectedResident.getResidentId()),
@@ -94,52 +79,31 @@ public class GUIController {
                                 selectedResident.getContactNo(),
                                 String.valueOf(selectedResident.getYearLevel()),
                                 selectedResident.getProgram(),
-                                selectedResident.getMoveInDate().toString()));
-                if (formData == null) {
-                    return;
-                }
+                                selectedResident.getMoveInDate().toString())),
+                formData -> saveResident(formData, true),
+                this::loadResidents,
+                "Resident Updated",
+                "Resident updated successfully.");
 
-                saveResident(formData, true);
-                loadResidents();
-                contentPanel.showSuccessMessage("Resident Updated", "Resident updated successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Update Failed", "Update failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setDeleteAction(e -> {
-            Resident selectedResident = contentPanel.getSelectedResident();
-            if (selectedResident == null) {
-                contentPanel.showWarningMessage("Delete Resident", "Select a resident to delete.");
-                return;
-            }
-
-            boolean confirmed = StyledConfirmDialog.showConfirm(
-                    contentPanel,
-                    "Delete Resident",
-                    "Delete resident " + selectedResident.getResidentId() + " (" + selectedResident.getFirstName()
-                            + " " + selectedResident.getLastName() + ")?");
-            if (!confirmed) {
-                return;
-            }
-
-            try {
-                residentService.deleteResident(selectedResident.getResidentId());
-
-                loadResidents();
-                contentPanel.showSuccessMessage("Resident Deleted", "Resident deleted successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Delete Failed", "Delete failed: " + ex.getMessage());
-            }
-        });
+        configureDeleteAction(
+                contentPanel::getSelectedResident,
+                "Delete Resident",
+                "Select a resident to delete.",
+                "Delete Resident",
+                selectedResident -> "Delete resident " + selectedResident.getResidentId() + " ("
+                        + selectedResident.getFirstName() + " " + selectedResident.getLastName() + ")?",
+                selectedResident -> residentService.deleteResident(selectedResident.getResidentId()),
+                this::loadResidents,
+                "Resident Deleted",
+                "Resident deleted successfully.");
 
         loadResidents();
     }
 
     private void saveResident(ResidentFormData formData, boolean update) {
-        int residentId = Integer.parseInt(formData.getResidentId());
-        int yearLevel = Integer.parseInt(formData.getYearLevel());
-        Date moveInDate = Date.valueOf(LocalDate.parse(formData.getMoveInDate()));
+        int residentId = parseIntField(formData.getResidentId(), "Resident ID");
+        int yearLevel = parseIntField(formData.getYearLevel(), "Year level");
+        Date moveInDate = parseDateField(formData.getMoveInDate(), "Move-in date");
 
         if (update) {
             residentService.updateResident(
@@ -166,79 +130,47 @@ public class GUIController {
     public void bindRoomActions() {
         contentPanel.setViewAction(e -> loadRooms());
 
-        contentPanel.setAddAction(e -> {
-            try {
-                RoomFormData formData = RoomFormDialog.showAddDialog(contentPanel);
-                if (formData == null) {
-                    return;
-                }
+        configureAddAction(
+            () -> RoomFormDialog.showAddDialog(contentPanel),
+                formData -> saveRoom(formData, false),
+                this::loadRooms,
+                "Room Added",
+                "Room added successfully.");
 
-                saveRoom(formData, false);
-                loadRooms();
-                contentPanel.showSuccessMessage("Room Added", "Room added successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Add Failed", "Add failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setUpdateAction(e -> {
-            Room selectedRoom = contentPanel.getSelectedRoom();
-            if (selectedRoom == null) {
-                contentPanel.showWarningMessage("Update Room", "Select a room to update.");
-                return;
-            }
-
-            try {
-                RoomFormData formData = RoomFormDialog.showUpdateDialog(
+        configureUpdateAction(
+                contentPanel::getSelectedRoom,
+                "Update Room",
+                "Select a room to update.",
+                selectedRoom -> RoomFormDialog.showUpdateDialog(
                         contentPanel,
                         new RoomFormData(
                                 String.valueOf(selectedRoom.getRoomNo()),
                                 selectedRoom.getRoomType(),
                                 String.valueOf(selectedRoom.getCapacity()),
-                                String.valueOf(selectedRoom.getCurrentOccupancy())));
-                if (formData == null) {
-                    return;
-                }
+                                String.valueOf(selectedRoom.getCurrentOccupancy()))),
+                formData -> saveRoom(formData, true),
+                this::loadRooms,
+                "Room Updated",
+                "Room updated successfully.");
 
-                saveRoom(formData, true);
-                loadRooms();
-                contentPanel.showSuccessMessage("Room Updated", "Room updated successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Update Failed", "Update failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setDeleteAction(e -> {
-            Room selectedRoom = contentPanel.getSelectedRoom();
-            if (selectedRoom == null) {
-                contentPanel.showWarningMessage("Delete Room", "Select a room to delete.");
-                return;
-            }
-
-            boolean confirmed = StyledConfirmDialog.showConfirm(
-                    contentPanel,
-                    "Delete Room",
-                    "Delete room " + selectedRoom.getRoomNo() + " (" + selectedRoom.getRoomType() + ")?");
-            if (!confirmed) {
-                return;
-            }
-
-            try {
-                roomService.deleteRoom(selectedRoom.getRoomNo());
-                loadRooms();
-                contentPanel.showSuccessMessage("Room Deleted", "Room deleted successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Delete Failed", "Delete failed: " + ex.getMessage());
-            }
-        });
+        configureDeleteAction(
+                contentPanel::getSelectedRoom,
+                "Delete Room",
+                "Select a room to delete.",
+                "Delete Room",
+                selectedRoom -> "Delete room " + selectedRoom.getRoomNo() + " (" + selectedRoom.getRoomType() + ")?",
+                selectedRoom -> roomService.deleteRoom(selectedRoom.getRoomNo()),
+                this::loadRooms,
+                "Room Deleted",
+                "Room deleted successfully.");
 
         loadRooms();
     }
 
     private void saveRoom(RoomFormData formData, boolean update) {
-        int roomNo = Integer.parseInt(formData.getRoomNo());
-        int capacity = Integer.parseInt(formData.getCapacity());
-        int currentOccupancy = Integer.parseInt(formData.getCurrentOccupancy());
+        int roomNo = parseIntField(formData.getRoomNo(), "Room number");
+        int capacity = parseIntField(formData.getCapacity(), "Capacity");
+        int currentOccupancy = parseIntField(formData.getCurrentOccupancy(), "Current occupancy");
 
         if (update) {
             roomService.updateRoom(roomNo, formData.getRoomType(), capacity, currentOccupancy);
@@ -251,30 +183,18 @@ public class GUIController {
     public void bindAssignmentActions() {
         contentPanel.setViewAction(e -> loadAssignments());
 
-        contentPanel.setAddAction(e -> {
-            try {
-                AssignmentFormData formData = AssignmentFormDialog.showAddDialog(contentPanel);
-                if (formData == null) {
-                    return;
-                }
+        configureAddAction(
+            () -> AssignmentFormDialog.showAddDialog(contentPanel),
+                formData -> saveAssignment(formData, false),
+                this::loadAssignments,
+                "Assignment Added",
+                "Assignment added successfully.");
 
-                saveAssignment(formData, false);
-                loadAssignments();
-                contentPanel.showSuccessMessage("Assignment Added", "Assignment added successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Add Failed", "Add failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setUpdateAction(e -> {
-            RoomAssignment selectedAssignment = contentPanel.getSelectedAssignment();
-            if (selectedAssignment == null) {
-                contentPanel.showWarningMessage("Update Assignment", "Select an assignment to update.");
-                return;
-            }
-
-            try {
-                AssignmentFormData formData = AssignmentFormDialog.showUpdateDialog(
+        configureUpdateAction(
+                contentPanel::getSelectedAssignment,
+                "Update Assignment",
+                "Select an assignment to update.",
+                selectedAssignment -> AssignmentFormDialog.showUpdateDialog(
                         contentPanel,
                         new AssignmentFormData(
                                 String.valueOf(selectedAssignment.getAssignmentId()),
@@ -282,55 +202,35 @@ public class GUIController {
                                 String.valueOf(selectedAssignment.getRoomId()),
                                 selectedAssignment.getDateAssigned().toString(),
                                 selectedAssignment.getDateVacated() == null ? ""
-                                        : selectedAssignment.getDateVacated().toString()));
-                if (formData == null) {
-                    return;
-                }
+                                        : selectedAssignment.getDateVacated().toString())),
+                formData -> saveAssignment(formData, true),
+                this::loadAssignments,
+                "Assignment Updated",
+                "Assignment updated successfully.");
 
-                saveAssignment(formData, true);
-                loadAssignments();
-                contentPanel.showSuccessMessage("Assignment Updated", "Assignment updated successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Update Failed", "Update failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setDeleteAction(e -> {
-            RoomAssignment selectedAssignment = contentPanel.getSelectedAssignment();
-            if (selectedAssignment == null) {
-                contentPanel.showWarningMessage("Delete Assignment", "Select an assignment to delete.");
-                return;
-            }
-
-            boolean confirmed = StyledConfirmDialog.showConfirm(
-                    contentPanel,
-                    "Delete Assignment",
-                    "Delete assignment " + selectedAssignment.getAssignmentId() + "?");
-            if (!confirmed) {
-                return;
-            }
-
-            try {
-                roomAssignmentService.deleteRoomAssignment(selectedAssignment.getAssignmentId());
-                loadAssignments();
-                contentPanel.showSuccessMessage("Assignment Deleted", "Assignment deleted successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Delete Failed", "Delete failed: " + ex.getMessage());
-            }
-        });
+        configureDeleteAction(
+                contentPanel::getSelectedAssignment,
+                "Delete Assignment",
+                "Select an assignment to delete.",
+                "Delete Assignment",
+                selectedAssignment -> "Delete assignment " + selectedAssignment.getAssignmentId() + "?",
+                selectedAssignment -> roomAssignmentService.deleteRoomAssignment(selectedAssignment.getAssignmentId()),
+                this::loadAssignments,
+                "Assignment Deleted",
+                "Assignment deleted successfully.");
 
         loadAssignments();
     }
 
     private void saveAssignment(AssignmentFormData formData, boolean update) {
-        int assignmentId = Integer.parseInt(formData.getAssignmentId());
-        int residentId = Integer.parseInt(formData.getResidentId());
-        int roomId = Integer.parseInt(formData.getRoomId());
-        Date dateAssigned = Date.valueOf(LocalDate.parse(formData.getDateAssigned()));
+        int assignmentId = parseIntField(formData.getAssignmentId(), "Assignment ID");
+        int residentId = parseIntField(formData.getResidentId(), "Resident ID");
+        int roomId = parseIntField(formData.getRoomId(), "Room ID");
+        Date dateAssigned = parseDateField(formData.getDateAssigned(), "Date assigned");
         Date dateVacated = null;
 
         if (!formData.getDateVacated().isBlank()) {
-            dateVacated = Date.valueOf(LocalDate.parse(formData.getDateVacated()));
+            dateVacated = parseDateField(formData.getDateVacated(), "Date vacated");
         }
 
         if (update) {
@@ -344,81 +244,49 @@ public class GUIController {
     public void bindPaymentActions() {
         contentPanel.setViewAction(e -> loadPayments());
 
-        contentPanel.setAddAction(e -> {
-            try {
-                PaymentFormData formData = PaymentFormDialog.showAddDialog(contentPanel);
-                if (formData == null) {
-                    return;
-                }
+        configureAddAction(
+            () -> PaymentFormDialog.showAddDialog(contentPanel),
+                formData -> savePayment(formData, false),
+                this::loadPayments,
+                "Payment Added",
+                "Payment added successfully.");
 
-                savePayment(formData, false);
-                loadPayments();
-                contentPanel.showSuccessMessage("Payment Added", "Payment added successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Add Failed", "Add failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setUpdateAction(e -> {
-            Payment selectedPayment = contentPanel.getSelectedPayment();
-            if (selectedPayment == null) {
-                contentPanel.showWarningMessage("Update Payment", "Select a payment to update.");
-                return;
-            }
-
-            try {
-                PaymentFormData formData = PaymentFormDialog.showUpdateDialog(
+        configureUpdateAction(
+                contentPanel::getSelectedPayment,
+                "Update Payment",
+                "Select a payment to update.",
+                selectedPayment -> PaymentFormDialog.showUpdateDialog(
                         contentPanel,
                         new PaymentFormData(
                                 String.valueOf(selectedPayment.getPaymentId()),
                                 String.valueOf(selectedPayment.getResidentId()),
                                 String.valueOf(selectedPayment.getAmount()),
                                 selectedPayment.getPaymentDate().toString(),
-                                selectedPayment.getStatus()));
-                if (formData == null) {
-                    return;
-                }
+                                selectedPayment.getStatus())),
+                formData -> savePayment(formData, true),
+                this::loadPayments,
+                "Payment Updated",
+                "Payment updated successfully.");
 
-                savePayment(formData, true);
-                loadPayments();
-                contentPanel.showSuccessMessage("Payment Updated", "Payment updated successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Update Failed", "Update failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setDeleteAction(e -> {
-            Payment selectedPayment = contentPanel.getSelectedPayment();
-            if (selectedPayment == null) {
-                contentPanel.showWarningMessage("Delete Payment", "Select a payment to delete.");
-                return;
-            }
-
-            boolean confirmed = StyledConfirmDialog.showConfirm(
-                    contentPanel,
-                    "Delete Payment",
-                    "Delete payment " + selectedPayment.getPaymentId() + "?");
-            if (!confirmed) {
-                return;
-            }
-
-            try {
-                paymentService.deletePayment(selectedPayment.getPaymentId());
-                loadPayments();
-                contentPanel.showSuccessMessage("Payment Deleted", "Payment deleted successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Delete Failed", "Delete failed: " + ex.getMessage());
-            }
-        });
+        configureDeleteAction(
+                contentPanel::getSelectedPayment,
+                "Delete Payment",
+                "Select a payment to delete.",
+                "Delete Payment",
+                selectedPayment -> "Delete payment " + selectedPayment.getPaymentId() + "?",
+                selectedPayment -> paymentService.deletePayment(selectedPayment.getPaymentId()),
+                this::loadPayments,
+                "Payment Deleted",
+                "Payment deleted successfully.");
 
         loadPayments();
     }
 
     private void savePayment(PaymentFormData formData, boolean update) {
-        int paymentId = Integer.parseInt(formData.getPaymentId());
-        int residentId = Integer.parseInt(formData.getResidentId());
-        double amount = Double.parseDouble(formData.getAmount());
-        Date paymentDate = Date.valueOf(LocalDate.parse(formData.getPaymentDate()));
+        int paymentId = parseIntField(formData.getPaymentId(), "Payment ID");
+        int residentId = parseIntField(formData.getResidentId(), "Resident ID");
+        double amount = parseDoubleField(formData.getAmount(), "Amount");
+        Date paymentDate = parseDateField(formData.getPaymentDate(), "Payment date");
 
         if (update) {
             paymentService.updatePayment(
@@ -441,30 +309,18 @@ public class GUIController {
     public void bindDormPassActions() {
         contentPanel.setViewAction(e -> loadDormPasses());
 
-        contentPanel.setAddAction(e -> {
-            try {
-                DormPassFormData formData = DormPassFormDialog.showAddDialog(contentPanel);
-                if (formData == null) {
-                    return;
-                }
+        configureAddAction(
+            () -> DormPassFormDialog.showAddDialog(contentPanel),
+                formData -> saveDormPass(formData, false),
+                this::loadDormPasses,
+                "Dorm Pass Added",
+                "Dorm pass added successfully.");
 
-                saveDormPass(formData, false);
-                loadDormPasses();
-                contentPanel.showSuccessMessage("Dorm Pass Added", "Dorm pass added successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Add Failed", "Add failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setUpdateAction(e -> {
-            DormPass selectedDormPass = contentPanel.getSelectedDormPass();
-            if (selectedDormPass == null) {
-                contentPanel.showWarningMessage("Update Dorm Pass", "Select a dorm pass to update.");
-                return;
-            }
-
-            try {
-                DormPassFormData formData = DormPassFormDialog.showUpdateDialog(
+        configureUpdateAction(
+                contentPanel::getSelectedDormPass,
+                "Update Dorm Pass",
+                "Select a dorm pass to update.",
+                selectedDormPass -> DormPassFormDialog.showUpdateDialog(
                         contentPanel,
                         new DormPassFormData(
                                 String.valueOf(selectedDormPass.getPassId()),
@@ -473,50 +329,30 @@ public class GUIController {
                                 selectedDormPass.getReason(),
                                 selectedDormPass.getDestination(),
                                 selectedDormPass.getDateApplied().toString(),
-                                selectedDormPass.getStatus()));
-                if (formData == null) {
-                    return;
-                }
+                                selectedDormPass.getStatus())),
+                formData -> saveDormPass(formData, true),
+                this::loadDormPasses,
+                "Dorm Pass Updated",
+                "Dorm pass updated successfully.");
 
-                saveDormPass(formData, true);
-                loadDormPasses();
-                contentPanel.showSuccessMessage("Dorm Pass Updated", "Dorm pass updated successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Update Failed", "Update failed: " + ex.getMessage());
-            }
-        });
-
-        contentPanel.setDeleteAction(e -> {
-            DormPass selectedDormPass = contentPanel.getSelectedDormPass();
-            if (selectedDormPass == null) {
-                contentPanel.showWarningMessage("Delete Dorm Pass", "Select a dorm pass to delete.");
-                return;
-            }
-
-            boolean confirmed = StyledConfirmDialog.showConfirm(
-                    contentPanel,
-                    "Delete Dorm Pass",
-                    "Delete dorm pass " + selectedDormPass.getPassId() + "?");
-            if (!confirmed) {
-                return;
-            }
-
-            try {
-                dormPassService.deleteDormPass(selectedDormPass.getPassId());
-                loadDormPasses();
-                contentPanel.showSuccessMessage("Dorm Pass Deleted", "Dorm pass deleted successfully.");
-            } catch (Exception ex) {
-                contentPanel.showErrorMessage("Delete Failed", "Delete failed: " + ex.getMessage());
-            }
-        });
+        configureDeleteAction(
+                contentPanel::getSelectedDormPass,
+                "Delete Dorm Pass",
+                "Select a dorm pass to delete.",
+                "Delete Dorm Pass",
+                selectedDormPass -> "Delete dorm pass " + selectedDormPass.getPassId() + "?",
+                selectedDormPass -> dormPassService.deleteDormPass(selectedDormPass.getPassId()),
+                this::loadDormPasses,
+                "Dorm Pass Deleted",
+                "Dorm pass deleted successfully.");
 
         loadDormPasses();
     }
 
     private void saveDormPass(DormPassFormData formData, boolean update) {
-        int passId = Integer.parseInt(formData.getPassId());
-        int residentId = Integer.parseInt(formData.getResidentId());
-        Date dateApplied = Date.valueOf(LocalDate.parse(formData.getDateApplied()));
+        int passId = parseIntField(formData.getPassId(), "Pass ID");
+        int residentId = parseIntField(formData.getResidentId(), "Resident ID");
+        Date dateApplied = parseDateField(formData.getDateApplied(), "Date applied");
 
         if (update) {
             dormPassService.updateDormPass(
@@ -545,47 +381,147 @@ public class GUIController {
     }
 
     private void loadResidents() {
-        try {
-            List<Resident> residents = residentService.findAllResidents();
-            contentPanel.showResidentsTable(residents);
-        } catch (Exception ex) {
-            contentPanel.showErrorMessage("Residents", "Failed to load residents: " + ex.getMessage());
-        }
+        loadTableData("Residents", "Failed to load residents: ", residentService::findAllResidents,
+                contentPanel::showResidentsTable);
     }
 
     private void loadRooms() {
-        try {
-            List<Room> rooms = roomService.findAllRooms();
-            contentPanel.showRoomsTable(rooms);
-        } catch (Exception ex) {
-            contentPanel.showErrorMessage("Rooms", "Failed to load rooms: " + ex.getMessage());
-        }
+        loadTableData("Rooms", "Failed to load rooms: ", roomService::findAllRooms, contentPanel::showRoomsTable);
     }
 
     private void loadAssignments() {
-        try {
-            List<RoomAssignment> assignments = roomAssignmentService.findAllAssignments();
-            contentPanel.showAssignmentsTable(assignments);
-        } catch (Exception ex) {
-            contentPanel.showErrorMessage("Assignments", "Failed to load assignments: " + ex.getMessage());
-        }
+        loadTableData("Assignments", "Failed to load assignments: ", roomAssignmentService::findAllAssignments,
+                contentPanel::showAssignmentsTable);
     }
 
     private void loadPayments() {
-        try {
-            List<Payment> payments = paymentService.findAllPayments();
-            contentPanel.showPaymentsTable(payments);
-        } catch (Exception ex) {
-            contentPanel.showErrorMessage("Payments", "Failed to load payments: " + ex.getMessage());
-        }
+        loadTableData("Payments", "Failed to load payments: ", paymentService::findAllPayments,
+                contentPanel::showPaymentsTable);
     }
 
     private void loadDormPasses() {
+        loadTableData("Dorm Passes", "Failed to load dorm passes: ", dormPassService::findAllDormPasses,
+                contentPanel::showDormPassesTable);
+    }
+
+    private int parseIntField(String value, String fieldName) {
         try {
-            List<DormPass> dormPasses = dormPassService.findAllDormPasses();
-            contentPanel.showDormPassesTable(dormPasses);
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException(fieldName + " must be a valid whole number.");
+        }
+    }
+
+    private double parseDoubleField(String value, String fieldName) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException(fieldName + " must be a valid number.");
+        }
+    }
+
+    private Date parseDateField(String value, String fieldName) {
+        try {
+            return Date.valueOf(LocalDate.parse(value));
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException(fieldName + " must use YYYY-MM-DD format.");
+        }
+    }
+
+    private <F> void configureAddAction(
+            Supplier<F> showAddDialog,
+            Consumer<F> saveAction,
+            Runnable reloadAction,
+            String successTitle,
+            String successMessage) {
+        contentPanel.setAddAction(e -> runCrudAction("Add Failed", "Add failed: ", () -> {
+            F formData = showAddDialog.get();
+            if (formData == null) {
+                return;
+            }
+
+            saveAction.accept(formData);
+            reloadAction.run();
+            contentPanel.showSuccessMessage(successTitle, successMessage);
+        }));
+    }
+
+    private <S, F> void configureUpdateAction(
+            Supplier<S> selectedSupplier,
+            String warningTitle,
+            String warningMessage,
+            Function<S, F> showUpdateDialog,
+            Consumer<F> saveAction,
+            Runnable reloadAction,
+            String successTitle,
+            String successMessage) {
+        contentPanel.setUpdateAction(e -> {
+            S selectedItem = selectedSupplier.get();
+            if (selectedItem == null) {
+                contentPanel.showWarningMessage(warningTitle, warningMessage);
+                return;
+            }
+
+            runCrudAction("Update Failed", "Update failed: ", () -> {
+                F formData = showUpdateDialog.apply(selectedItem);
+                if (formData == null) {
+                    return;
+                }
+
+                saveAction.accept(formData);
+                reloadAction.run();
+                contentPanel.showSuccessMessage(successTitle, successMessage);
+            });
+        });
+    }
+
+    private <S> void configureDeleteAction(
+            Supplier<S> selectedSupplier,
+            String warningTitle,
+            String warningMessage,
+            String confirmTitle,
+            Function<S, String> confirmMessageSupplier,
+            Consumer<S> deleteAction,
+            Runnable reloadAction,
+            String successTitle,
+            String successMessage) {
+        contentPanel.setDeleteAction(e -> {
+            S selectedItem = selectedSupplier.get();
+            if (selectedItem == null) {
+                contentPanel.showWarningMessage(warningTitle, warningMessage);
+                return;
+            }
+
+            boolean confirmed = StyledConfirmDialog.showConfirm(
+                    contentPanel,
+                    confirmTitle,
+                    confirmMessageSupplier.apply(selectedItem));
+            if (!confirmed) {
+                return;
+            }
+
+            runCrudAction("Delete Failed", "Delete failed: ", () -> {
+                deleteAction.accept(selectedItem);
+                reloadAction.run();
+                contentPanel.showSuccessMessage(successTitle, successMessage);
+            });
+        });
+    }
+
+    private void runCrudAction(String errorTitle, String errorPrefix, Runnable action) {
+        try {
+            action.run();
         } catch (Exception ex) {
-            contentPanel.showErrorMessage("Dorm Passes", "Failed to load dorm passes: " + ex.getMessage());
+            contentPanel.showErrorMessage(errorTitle, errorPrefix + ex.getMessage());
+        }
+    }
+
+    private <T> void loadTableData(String errorTitle, String errorMessagePrefix,
+            Supplier<List<T>> dataSupplier, Consumer<List<T>> tableRenderer) {
+        try {
+            tableRenderer.accept(dataSupplier.get());
+        } catch (Exception ex) {
+            contentPanel.showErrorMessage(errorTitle, errorMessagePrefix + ex.getMessage());
         }
     }
 }

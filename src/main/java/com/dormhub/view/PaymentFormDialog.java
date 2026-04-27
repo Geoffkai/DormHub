@@ -12,6 +12,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Window;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -21,6 +23,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+
+import com.toedter.calendar.JDateChooser;
 
 public class PaymentFormDialog extends JDialog {
     private static final int SHADOW_MARGIN = 12;
@@ -30,7 +35,7 @@ public class PaymentFormDialog extends JDialog {
     private final JTextField paymentIdField = createTextField();
     private final JTextField residentIdField = createTextField();
     private final JTextField amountField = createTextField();
-    private final JTextField paymentDateField = createTextField();
+    private final JDateChooser paymentDateChooser = createDateChooser();
     private final JTextField statusField = createTextField();
     private final JLabel titleLabel = new JLabel();
 
@@ -55,7 +60,7 @@ public class PaymentFormDialog extends JDialog {
         addField(formPanel, gbc, 0, "Payment ID:", paymentIdField);
         addField(formPanel, gbc, 1, "Resident ID:", residentIdField);
         addField(formPanel, gbc, 2, "Amount:", amountField);
-        addField(formPanel, gbc, 3, "Payment Date:", paymentDateField);
+        addField(formPanel, gbc, 3, "Payment Date:", paymentDateChooser);
         addField(formPanel, gbc, 4, "Status:", statusField);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
@@ -87,7 +92,7 @@ public class PaymentFormDialog extends JDialog {
 
         setSize(CONTENT_WIDTH + (SHADOW_MARGIN * 2), CONTENT_HEIGHT + (SHADOW_MARGIN * 2));
         setResizable(false);
-        setLocation(758 - SHADOW_MARGIN, 390 - SHADOW_MARGIN);
+        setLocationRelativeTo(owner);
     }
 
     public static PaymentFormData showAddDialog(Component parent) {
@@ -113,14 +118,15 @@ public class PaymentFormDialog extends JDialog {
         paymentIdField.setText(initialData.getPaymentId());
         residentIdField.setText(initialData.getResidentId());
         amountField.setText(initialData.getAmount());
-        paymentDateField.setText(initialData.getPaymentDate());
+        setDateField(paymentDateChooser, initialData.getPaymentDate());
         statusField.setText(initialData.getStatus());
     }
 
-    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JTextField field) {
+    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, Component field) {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
+
         JLabel fieldLabel = new JLabel(label);
         fieldLabel.setOpaque(false);
         fieldLabel.setForeground(Color.WHITE);
@@ -130,6 +136,36 @@ public class PaymentFormDialog extends JDialog {
         gbc.gridx = 1;
         gbc.weightx = 1;
         panel.add(field, gbc);
+    }
+
+    private JDateChooser createDateChooser() {
+        JDateChooser chooser = new JDateChooser();
+        chooser.setDateFormatString("yyyy-MM-dd");
+        chooser.setFont(new Font("Arial", Font.PLAIN, 20));
+        chooser.setOpaque(false);
+        chooser.setPreferredSize(new java.awt.Dimension(25, 38));
+
+        Component editorComponent = chooser.getDateEditor().getUiComponent();
+        if (editorComponent instanceof JTextComponent textComponent) {
+            textComponent.setEditable(false);
+        }
+
+        return chooser;
+    }
+
+    private void setDateField(JDateChooser chooser, String dateText) {
+        try {
+            if (dateText == null || dateText.isBlank()) {
+                chooser.setDate(null);
+                return;
+            }
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            formatter.setLenient(false);
+            chooser.setDate(formatter.parse(dateText.trim()));
+        } catch (ParseException e) {
+            chooser.setDate(null);
+        }
     }
 
     private JTextField createTextField() {
@@ -157,17 +193,19 @@ public class PaymentFormDialog extends JDialog {
 
     private void onSave() {
         if (paymentIdField.getText().isBlank() || residentIdField.getText().isBlank()
-                || amountField.getText().isBlank() || paymentDateField.getText().isBlank()
+                || amountField.getText().isBlank() || paymentDateChooser.getDate() == null
                 || statusField.getText().isBlank()) {
             StyledMessageDialog.showWarning(this, "Payment", "Fill in all payment fields.");
             return;
         }
 
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
         formData = new PaymentFormData(
                 paymentIdField.getText().trim(),
                 residentIdField.getText().trim(),
                 amountField.getText().trim(),
-                paymentDateField.getText().trim(),
+                formatter.format(paymentDateChooser.getDate()),
                 statusField.getText().trim());
         dispose();
     }

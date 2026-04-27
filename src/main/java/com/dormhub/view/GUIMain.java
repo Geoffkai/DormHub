@@ -75,8 +75,11 @@ public class GUIMain {
         // Authentication process here
         LoginController loginController = new LoginController(frame, usernameField, passwordField, Error);
         loginButton.addActionListener(e -> loginController.handleLogin());
+        usernameField.addActionListener(e -> loginButton.doClick());
+        passwordField.addActionListener(e -> loginButton.doClick());
 
         frame.setContentPane(loginPage);
+        frame.getRootPane().setDefaultButton(loginButton);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
     }

@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.sql.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractButton;
 import javax.swing.Box;
@@ -14,12 +15,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
@@ -130,6 +133,25 @@ public class ContentPanel extends JPanel {
         // Sorter
         sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
+
+        // Live search: update table as user types or changes selected attribute.
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                applySearchFilter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                applySearchFilter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                applySearchFilter();
+            }
+        });
+        attributeComboBox.addActionListener(e -> applySearchFilter());
 
         // Exit Button
         ImageIcon exitIcon = ImageResources.loadIcon("/img/ExitGreen.png");
@@ -260,7 +282,7 @@ public class ContentPanel extends JPanel {
         UpdateBtn.addActionListener(e -> System.out.println("Update " + label + " clicked"));
         DeleteBtn.addActionListener(e -> System.out.println("Delete " + label + " clicked"));
         ExportBtn.addActionListener(e -> System.out.println("Export " + label + " clicked"));
-        searchBtn.addActionListener(e -> System.out.println("Search " + label + " clicked"));
+        searchBtn.addActionListener(e -> applySearchFilter());
     }
 
     private void resetActionListeners(AbstractButton button) {
@@ -446,5 +468,23 @@ public class ContentPanel extends JPanel {
 
     public void showErrorMessage(String title, String message) {
         StyledMessageDialog.showError(this, title, message);
+    }
+
+    private void applySearchFilter() {
+        String query = searchField.getText();
+        if (query == null || query.isBlank()) {
+            sorter.setRowFilter(null);
+            return;
+        }
+
+        String safeQuery = "(?i)" + Pattern.quote(query.trim());
+        int selectedColumnIndex = attributeComboBox.getSelectedIndex();
+
+        if (selectedColumnIndex < 0) {
+            sorter.setRowFilter(RowFilter.regexFilter(safeQuery));
+            return;
+        }
+
+        sorter.setRowFilter(RowFilter.regexFilter(safeQuery, selectedColumnIndex));
     }
 }
