@@ -14,14 +14,14 @@ import com.dormhub.service.PaymentService;
 import com.dormhub.service.ResidentService;
 import com.dormhub.service.RoomAssignmentService;
 import com.dormhub.service.RoomService;
-import com.dormhub.view.ContentPanel;
 import com.dormhub.view.AssignmentFormDialog;
 import com.dormhub.view.AssignmentFormDialog.AssignmentFormData;
+import com.dormhub.view.ContentPanel;
 import com.dormhub.view.DormPassFormDialog;
 import com.dormhub.view.DormPassFormDialog.DormPassFormData;
+import com.dormhub.view.PanelsHandler;
 import com.dormhub.view.PaymentFormDialog;
 import com.dormhub.view.PaymentFormDialog.PaymentFormData;
-import com.dormhub.view.PanelsHandler;
 import com.dormhub.view.ResidentFormDialog;
 import com.dormhub.view.ResidentFormDialog.ResidentFormData;
 import com.dormhub.view.RoomFormDialog;
@@ -29,8 +29,6 @@ import com.dormhub.view.RoomFormDialog.RoomFormData;
 import com.dormhub.view.StyledConfirmDialog;
 
 public class GUIController {
-    private static final String DEFAULT_PAYMENT_METHOD = "N/A";
-
     private final ResidentService residentService;
     private final RoomService roomService;
     private final DormPassService dormPassService;
@@ -428,7 +426,6 @@ public class GUIController {
                     residentId,
                     amount,
                     paymentDate,
-                    DEFAULT_PAYMENT_METHOD,
                     formData.getStatus());
             return;
         }
@@ -438,7 +435,6 @@ public class GUIController {
                 residentId,
                 amount,
                 paymentDate,
-                DEFAULT_PAYMENT_METHOD,
                 formData.getStatus());
     }
 

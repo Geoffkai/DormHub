@@ -36,7 +36,6 @@ CREATE TABLE payment (
     resident_id     INT(9)          NOT NULL,
     amount          DECIMAL(10,2)   NOT NULL,
     payment_date    DATE            NOT NULL,
-    method          VARCHAR(20)     NOT NULL CHECK (method IN ('Cash', 'GCash', 'Bank Transfer')),
     status          VARCHAR(6)      NOT NULL DEFAULT 'Unpaid' CHECK (status IN ('Paid', 'Unpaid')),
     CONSTRAINT fk_pay_resident FOREIGN KEY (resident_id) REFERENCES resident(resident_id)
         ON DELETE CASCADE ON UPDATE CASCADE
@@ -121,29 +120,29 @@ INSERT INTO room_assignments (resident_id, room_id, date_assigned, date_vacated)
 (202415009, 104, '2024-08-02', '2025-05-30');  -- Rina vacated end of last sem
 
 -- PAYMENTS
-INSERT INTO payment (resident_id, amount, payment_date, method, status) VALUES
+INSERT INTO payment (resident_id, amount, payment_date, status) VALUES
 -- paid up residents
-(202415006, 3500.00, '2026-01-05', 'GCash',         'Paid'),
-(202415008, 3500.00, '2026-01-03', 'Bank Transfer',  'Paid'),
-(202415010, 3500.00, '2026-01-10', 'Cash',           'Paid'),
-(202215018, 3500.00, '2026-01-07', 'GCash',          'Paid'),
-(202515002, 3500.00, '2026-01-04', 'GCash',          'Paid'),
-(202515001, 3500.00, '2026-01-02', 'Bank Transfer',  'Paid'),
-(202515003, 3500.00, '2026-01-06', 'Cash',           'Paid'),
-(202315013, 3500.00, '2026-01-08', 'GCash',          'Paid'),
-(202215017, 3500.00, '2026-01-05', 'Bank Transfer',  'Paid'),
-(202315011, 3500.00, '2026-01-09', 'GCash',          'Paid'),
+(202415006, 3500.00, '2026-01-05', 'Paid'),
+(202415008, 3500.00, '2026-01-03', 'Paid'),
+(202415010, 3500.00, '2026-01-10', 'Paid'),
+(202215018, 3500.00, '2026-01-07', 'Paid'),
+(202515002, 3500.00, '2026-01-04', 'Paid'),
+(202515001, 3500.00, '2026-01-02', 'Paid'),
+(202515003, 3500.00, '2026-01-06', 'Paid'),
+(202315013, 3500.00, '2026-01-08', 'Paid'),
+(202215017, 3500.00, '2026-01-05', 'Paid'),
+(202315011, 3500.00, '2026-01-09', 'Paid'),
 
 -- unpaid / pending residents
-(202515004, 3500.00, '2026-02-01', 'Cash',           'Unpaid'),
-(202515005, 3500.00, '2026-02-01', 'GCash',          'Unpaid'),
-(202315015, 3500.00, '2026-02-01', 'Bank Transfer',  'Unpaid'),
-(202215016, 3500.00, '2026-02-01', 'GCash',          'Unpaid'),
+(202515004, 3500.00, '2026-02-01', 'Unpaid'),
+(202515005, 3500.00, '2026-02-01', 'Unpaid'),
+(202315015, 3500.00, '2026-02-01', 'Unpaid'),
+(202215016, 3500.00, '2026-02-01', 'Unpaid'),
 
 -- some residents with payment history (prev semester)
-(202415006, 3500.00, '2025-08-05', 'GCash',          'Paid'),
-(202215018, 3500.00, '2025-08-07', 'Bank Transfer',  'Paid'),
-(202315013, 3500.00, '2025-08-08', 'GCash',          'Paid');
+(202415006, 3500.00, '2025-08-05', 'Paid'),
+(202215018, 3500.00, '2025-08-07', 'Paid'),
+(202315013, 3500.00, '2025-08-08', 'Paid');
 
 -- DORM PASSES
 INSERT INTO dorm_pass (resident_id, type, reason, destination, date_applied, status) VALUES

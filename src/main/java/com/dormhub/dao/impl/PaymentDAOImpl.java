@@ -15,7 +15,7 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public void insert(Payment payment) {
-        String sql = "INSERT INTO payment (payment_id, resident_id, amount, payment_date, method, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO payment (payment_id, resident_id, amount, payment_date, status) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -23,8 +23,7 @@ public class PaymentDAOImpl implements PaymentDAO {
             ps.setInt(2, payment.getResidentId());
             ps.setDouble(3, payment.getAmount());
             ps.setDate(4, payment.getPaymentDate());
-            ps.setString(5, payment.getMethod());
-            ps.setString(6, payment.getStatus());
+            ps.setString(5, payment.getStatus());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -40,16 +39,15 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public void update(Payment payment) {
-        String sql = "UPDATE payment SET resident_id = ?, amount = ?, payment_date = ?, method = ?, status = ? WHERE payment_id = ?";
+        String sql = "UPDATE payment SET resident_id = ?, amount = ?, payment_date = ?, status = ? WHERE payment_id = ?";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, payment.getResidentId());
             ps.setDouble(2, payment.getAmount());
             ps.setDate(3, payment.getPaymentDate());
-            ps.setString(4, payment.getMethod());
-            ps.setString(5, payment.getStatus());
-            ps.setInt(6, payment.getPaymentId());
+            ps.setString(4, payment.getStatus());
+            ps.setInt(5, payment.getPaymentId());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -98,7 +96,6 @@ public class PaymentDAOImpl implements PaymentDAO {
                     payment.setResidentId(rs.getInt("resident_id"));
                     payment.setAmount(rs.getInt("amount"));
                     payment.setPaymentDate(rs.getDate("payment_date"));
-                    payment.setMethod(rs.getString("method"));
                     payment.setStatus(rs.getString("status"));
                     return payment;
                 }
@@ -127,7 +124,6 @@ public class PaymentDAOImpl implements PaymentDAO {
                     payment.setResidentId(rs.getInt("resident_id"));
                     payment.setAmount(rs.getInt("amount"));
                     payment.setPaymentDate(rs.getDate("payment_date"));
-                    payment.setMethod(rs.getString("method"));
                     payment.setStatus(rs.getString("status"));
                     payments.add(payment);
                 }
@@ -135,36 +131,6 @@ public class PaymentDAOImpl implements PaymentDAO {
 
         } catch (SQLException e) {
             System.out.println("Error finding payments by resident ID: " + e.getMessage());
-        }
-
-        return payments;
-    }
-
-    @Override
-    public List<Payment> findByMethod(String method) {
-        List<Payment> payments = new ArrayList<>();
-        String sql = "SELECT * FROM payment WHERE method = ?";
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, method);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Payment payment = new Payment();
-                    payment.setPaymentId(rs.getInt("payment_id"));
-                    payment.setResidentId(rs.getInt("resident_id"));
-                    payment.setAmount(rs.getInt("amount"));
-                    payment.setPaymentDate(rs.getDate("payment_date"));
-                    payment.setMethod(rs.getString("method"));
-                    payment.setStatus(rs.getString("status"));
-                    payments.add(payment);
-                }
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error finding payments by method: " + e.getMessage());
         }
 
         return payments;
@@ -187,7 +153,6 @@ public class PaymentDAOImpl implements PaymentDAO {
                     payment.setResidentId(rs.getInt("resident_id"));
                     payment.setAmount(rs.getInt("amount"));
                     payment.setPaymentDate(rs.getDate("payment_date"));
-                    payment.setMethod(rs.getString("method"));
                     payment.setStatus(rs.getString("status"));
                     payments.add(payment);
                 }
@@ -215,7 +180,6 @@ public class PaymentDAOImpl implements PaymentDAO {
                 payment.setResidentId(rs.getInt("resident_id"));
                 payment.setAmount(rs.getInt("amount"));
                 payment.setPaymentDate(rs.getDate("payment_date"));
-                payment.setMethod(rs.getString("method"));
                 payment.setStatus(rs.getString("status"));
                 payments.add(payment);
             }

@@ -7,7 +7,6 @@ public class Payment {
     private int residentId;
     private double amount;
     private Date paymentDate;
-    private String method;
     private String status;
 
     public int getPaymentId() {
@@ -40,14 +39,6 @@ public class Payment {
 
     public void setPaymentDate(Date paymentDate) {
         this.paymentDate = paymentDate;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
     }
 
     public String getStatus() {
