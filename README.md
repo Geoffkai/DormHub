@@ -42,8 +42,8 @@ db.url=jdbc:mysql://localhost:3306/dormhub?useSSL=false&serverTimezone=UTC&allow
 db.user=root
 db.password=your_password
 
-app.username=admin
-app.password=admin123
+app.username=
+app.password=
 ```
 
 You can also override database values with:
