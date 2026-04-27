@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.sql.Date;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -210,7 +211,7 @@ public class ContentPanel extends JPanel {
 
     public void showDormPass() {
         showManagerPanel(
-                new String[] { "Resident ID", "Reason", "Destination", "Date Applied", "Status" },
+                new String[] { "Pass ID", "Resident ID", "Type", "Reason", "Destination", "Date Applied", "Status" },
                 "DormPass");
     }
 
@@ -293,6 +294,94 @@ public class ContentPanel extends JPanel {
         searchBtn.addActionListener(listener);
     }
 
+    public Resident getSelectedResident() {
+        int viewRow = table.getSelectedRow();
+        if (viewRow < 0) {
+            return null;
+        }
+
+        int modelRow = table.convertRowIndexToModel(viewRow);
+        Resident resident = new Resident();
+        resident.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
+        resident.setFirstName(tableModel.getValueAt(modelRow, 1).toString());
+        resident.setLastName(tableModel.getValueAt(modelRow, 2).toString());
+        resident.setContactNo(tableModel.getValueAt(modelRow, 3).toString());
+        resident.setYearLevel(Integer.parseInt(tableModel.getValueAt(modelRow, 4).toString()));
+        resident.setProgram(tableModel.getValueAt(modelRow, 5).toString());
+        resident.setMoveInDate(Date.valueOf(tableModel.getValueAt(modelRow, 6).toString()));
+        return resident;
+    }
+
+    public Room getSelectedRoom() {
+        int viewRow = table.getSelectedRow();
+        if (viewRow < 0) {
+            return null;
+        }
+
+        int modelRow = table.convertRowIndexToModel(viewRow);
+        Room room = new Room();
+        room.setRoomNo(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
+        room.setRoomType(tableModel.getValueAt(modelRow, 1).toString());
+        room.setCapacity(Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString()));
+        room.setCurrentOccupancy(Integer.parseInt(tableModel.getValueAt(modelRow, 3).toString()));
+        return room;
+    }
+
+    public RoomAssignment getSelectedAssignment() {
+        int viewRow = table.getSelectedRow();
+        if (viewRow < 0) {
+            return null;
+        }
+
+        int modelRow = table.convertRowIndexToModel(viewRow);
+        RoomAssignment assignment = new RoomAssignment();
+        assignment.setAssignmentId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
+        assignment.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 1).toString()));
+        assignment.setRoomId(Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString()));
+        assignment.setDateAssigned(Date.valueOf(tableModel.getValueAt(modelRow, 3).toString()));
+
+        Object vacatedValue = tableModel.getValueAt(modelRow, 4);
+        if (vacatedValue != null && !vacatedValue.toString().isBlank()) {
+            assignment.setDateVacated(Date.valueOf(vacatedValue.toString()));
+        }
+
+        return assignment;
+    }
+
+    public Payment getSelectedPayment() {
+        int viewRow = table.getSelectedRow();
+        if (viewRow < 0) {
+            return null;
+        }
+
+        int modelRow = table.convertRowIndexToModel(viewRow);
+        Payment payment = new Payment();
+        payment.setPaymentId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
+        payment.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 1).toString()));
+        payment.setAmount(Double.parseDouble(tableModel.getValueAt(modelRow, 2).toString()));
+        payment.setPaymentDate(Date.valueOf(tableModel.getValueAt(modelRow, 3).toString()));
+        payment.setStatus(tableModel.getValueAt(modelRow, 4).toString());
+        return payment;
+    }
+
+    public DormPass getSelectedDormPass() {
+        int viewRow = table.getSelectedRow();
+        if (viewRow < 0) {
+            return null;
+        }
+
+        int modelRow = table.convertRowIndexToModel(viewRow);
+        DormPass dormPass = new DormPass();
+        dormPass.setPassId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
+        dormPass.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 1).toString()));
+        dormPass.setType(tableModel.getValueAt(modelRow, 2).toString());
+        dormPass.setReason(tableModel.getValueAt(modelRow, 3).toString());
+        dormPass.setDestination(tableModel.getValueAt(modelRow, 4).toString());
+        dormPass.setDateApplied(Date.valueOf(tableModel.getValueAt(modelRow, 5).toString()));
+        dormPass.setStatus(tableModel.getValueAt(modelRow, 6).toString());
+        return dormPass;
+    }
+
     public void showResidentsTable(List<Resident> residents) {
         tableModel.setRowCount(0);
         for (Resident resident : residents) {
@@ -337,13 +426,25 @@ public class ContentPanel extends JPanel {
         tableModel.setRowCount(0);
         for (DormPass dormPass : dormPasses) {
             tableModel.addRow(new Object[] {
-                    dormPass.getResidentId(), dormPass.getReason(), dormPass.getDestination(),
-                    dormPass.getDateApplied(), dormPass.getStatus()
+                    dormPass.getPassId(), dormPass.getResidentId(), dormPass.getType(), dormPass.getReason(),
+                    dormPass.getDestination(), dormPass.getDateApplied(), dormPass.getStatus()
             });
         }
     }
 
     public void showMessage(String message) {
-        JOptionPane.showMessageDialog(this, message);
+        StyledMessageDialog.showInfo(this, "Message", message);
+    }
+
+    public void showSuccessMessage(String title, String message) {
+        StyledMessageDialog.showSuccess(this, title, message);
+    }
+
+    public void showWarningMessage(String title, String message) {
+        StyledMessageDialog.showWarning(this, title, message);
+    }
+
+    public void showErrorMessage(String title, String message) {
+        StyledMessageDialog.showError(this, title, message);
     }
 }

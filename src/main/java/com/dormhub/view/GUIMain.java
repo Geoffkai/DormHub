@@ -2,7 +2,8 @@ package com.dormhub.view;
 
 import javax.swing.*;
 
-import com.dormhub.controller.LoginController;
+import com.dormhub.controller.*;
+import com.dormhub.service.Impl.*;
 
 import java.awt.*;
 
