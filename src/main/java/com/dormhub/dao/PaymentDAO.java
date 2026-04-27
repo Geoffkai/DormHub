@@ -15,8 +15,6 @@ public interface PaymentDAO {
 
     List<Payment> findByResidentId(int residentId);
 
-    List<Payment> findByMethod(String method);
-
     List<Payment> findByStatus(String status);
 
     List<Payment> findAllPayments();

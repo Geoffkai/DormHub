@@ -85,7 +85,7 @@ public class RoomFormDialog extends JDialog {
 
         setSize(CONTENT_WIDTH + (SHADOW_MARGIN * 2), CONTENT_HEIGHT + (SHADOW_MARGIN * 2));
         setResizable(false);
-        setLocation(758 - SHADOW_MARGIN, 390 - SHADOW_MARGIN);
+        setLocationRelativeTo(owner);
     }
 
     public static RoomFormData showAddDialog(Component parent) {

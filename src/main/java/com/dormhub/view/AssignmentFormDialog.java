@@ -12,7 +12,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Window;
-import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -22,6 +23,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+
+import com.toedter.calendar.JDateChooser;
 
 public class AssignmentFormDialog extends JDialog {
     private static final int SHADOW_MARGIN = 12;
@@ -31,8 +35,8 @@ public class AssignmentFormDialog extends JDialog {
     private final JTextField assignmentIdField = createTextField();
     private final JTextField residentIdField = createTextField();
     private final JTextField roomIdField = createTextField();
-    private final JTextField dateAssignedField = createTextField();
-    private final JTextField dateVacatedField = createTextField();
+    private final JDateChooser dateAssignedChooser = createDateChooser();
+    private final JDateChooser dateVacatedChooser = createDateChooser();
     private final JLabel titleLabel = new JLabel();
 
     private AssignmentFormData formData;
@@ -56,8 +60,8 @@ public class AssignmentFormDialog extends JDialog {
         addField(formPanel, gbc, 0, "Assignment ID:", assignmentIdField);
         addField(formPanel, gbc, 1, "Resident ID:", residentIdField);
         addField(formPanel, gbc, 2, "Room ID:", roomIdField);
-        addField(formPanel, gbc, 3, "Date Assigned:", dateAssignedField);
-        addField(formPanel, gbc, 4, "Date Vacated:", dateVacatedField);
+        addField(formPanel, gbc, 3, "Date Assigned:", dateAssignedChooser);
+        addField(formPanel, gbc, 4, "Date Vacated:", dateVacatedChooser);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
         actionsPanel.setOpaque(false);
@@ -88,7 +92,7 @@ public class AssignmentFormDialog extends JDialog {
 
         setSize(CONTENT_WIDTH + (SHADOW_MARGIN * 2), CONTENT_HEIGHT + (SHADOW_MARGIN * 2));
         setResizable(false);
-        setLocation(758 - SHADOW_MARGIN, 390 - SHADOW_MARGIN);
+        setLocationRelativeTo(owner);
     }
 
     public static AssignmentFormData showAddDialog(Component parent) {
@@ -114,11 +118,11 @@ public class AssignmentFormDialog extends JDialog {
         assignmentIdField.setText(initialData.getAssignmentId());
         residentIdField.setText(initialData.getResidentId());
         roomIdField.setText(initialData.getRoomId());
-        dateAssignedField.setText(initialData.getDateAssigned());
-        dateVacatedField.setText(initialData.getDateVacated());
+        setDateField(dateAssignedChooser, initialData.getDateAssigned());
+        setDateField(dateVacatedChooser, initialData.getDateVacated());
     }
 
-    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JTextField field) {
+    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, Component field) {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
@@ -131,6 +135,36 @@ public class AssignmentFormDialog extends JDialog {
         gbc.gridx = 1;
         gbc.weightx = 1;
         panel.add(field, gbc);
+    }
+
+    private JDateChooser createDateChooser() {
+        JDateChooser chooser = new JDateChooser();
+        chooser.setDateFormatString("yyyy-MM-dd");
+        chooser.setFont(new Font("Arial", Font.PLAIN, 20));
+        chooser.setOpaque(false);
+        chooser.setPreferredSize(new java.awt.Dimension(25, 38));
+
+        Component editorComponent = chooser.getDateEditor().getUiComponent();
+        if (editorComponent instanceof JTextComponent textComponent) {
+            textComponent.setEditable(false);
+        }
+
+        return chooser;
+    }
+
+    private void setDateField(JDateChooser chooser, String dateText) {
+        try {
+            if (dateText == null || dateText.isBlank()) {
+                chooser.setDate(null);
+                return;
+            }
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            formatter.setLenient(false);
+            chooser.setDate(formatter.parse(dateText.trim()));
+        } catch (ParseException e) {
+            chooser.setDate(null);
+        }
     }
 
     private JTextField createTextField() {
@@ -158,17 +192,21 @@ public class AssignmentFormDialog extends JDialog {
 
     private void onSave() {
         if (assignmentIdField.getText().isBlank() || residentIdField.getText().isBlank()
-                || roomIdField.getText().isBlank() || dateAssignedField.getText().isBlank()) {
+                || roomIdField.getText().isBlank() || dateAssignedChooser.getDate() == null) {
             StyledMessageDialog.showWarning(this, "Assignment", "Fill in all required assignment fields.");
             return;
         }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        String dateAssigned = formatter.format(dateAssignedChooser.getDate());
+        String dateVacated = dateVacatedChooser.getDate() == null ? "" : formatter.format(dateVacatedChooser.getDate());
 
         formData = new AssignmentFormData(
                 assignmentIdField.getText().trim(),
                 residentIdField.getText().trim(),
                 roomIdField.getText().trim(),
-                dateAssignedField.getText().trim(),
-                dateVacatedField.getText().trim());
+                dateAssigned,
+                dateVacated);
         dispose();
     }
 

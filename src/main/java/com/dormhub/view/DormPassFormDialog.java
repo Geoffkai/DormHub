@@ -12,15 +12,21 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Window;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+
+import com.toedter.calendar.JDateChooser;
 
 public class DormPassFormDialog extends JDialog {
     private static final int SHADOW_MARGIN = 12;
@@ -32,7 +38,7 @@ public class DormPassFormDialog extends JDialog {
     private final JTextField typeField = createTextField();
     private final JTextField reasonField = createTextField();
     private final JTextField destinationField = createTextField();
-    private final JTextField dateAppliedField = createTextField();
+    private final JDateChooser dateAppliedChooser = createDateChooser();
     private final JTextField statusField = createTextField();
     private final JLabel titleLabel = new JLabel();
 
@@ -50,7 +56,7 @@ public class DormPassFormDialog extends JDialog {
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 15, 5, 15);
+        gbc.insets = new Insets(6, 15, 5, 15);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
@@ -59,7 +65,7 @@ public class DormPassFormDialog extends JDialog {
         addField(formPanel, gbc, 2, "Type:", typeField);
         addField(formPanel, gbc, 3, "Reason:", reasonField);
         addField(formPanel, gbc, 4, "Destination:", destinationField);
-        addField(formPanel, gbc, 5, "Date Applied:", dateAppliedField);
+        addField(formPanel, gbc, 5, "Date Applied:", dateAppliedChooser);
         addField(formPanel, gbc, 6, "Status:", statusField);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
@@ -80,10 +86,10 @@ public class DormPassFormDialog extends JDialog {
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         titleLabel.setText(title);
-        titleLabel.setBounds(SHADOW_MARGIN + 82, SHADOW_MARGIN + 22, 300, 40);
+        titleLabel.setBounds(SHADOW_MARGIN + 82, SHADOW_MARGIN + 22, 280, 40);
 
-        formPanel.setBounds(SHADOW_MARGIN + 72, SHADOW_MARGIN + 108, 580, 360);
-        actionsPanel.setBounds(SHADOW_MARGIN + 154, SHADOW_MARGIN + 500, 416, 44);
+        formPanel.setBounds(SHADOW_MARGIN + 72, SHADOW_MARGIN + 92, 580, 422);
+        actionsPanel.setBounds(SHADOW_MARGIN + 154, SHADOW_MARGIN + 520, 416, 44);
 
         contentPanel.add(titleLabel);
         contentPanel.add(formPanel);
@@ -91,7 +97,7 @@ public class DormPassFormDialog extends JDialog {
 
         setSize(CONTENT_WIDTH + (SHADOW_MARGIN * 2), CONTENT_HEIGHT + (SHADOW_MARGIN * 2));
         setResizable(false);
-        setLocation(758 - SHADOW_MARGIN, 390 - SHADOW_MARGIN);
+        setLocationRelativeTo(owner);
     }
 
     public static DormPassFormData showAddDialog(Component parent) {
@@ -119,14 +125,15 @@ public class DormPassFormDialog extends JDialog {
         typeField.setText(initialData.getType());
         reasonField.setText(initialData.getReason());
         destinationField.setText(initialData.getDestination());
-        dateAppliedField.setText(initialData.getDateApplied());
+        setDateField(dateAppliedChooser, initialData.getDateApplied());
         statusField.setText(initialData.getStatus());
     }
 
-    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JTextField field) {
+    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, Component field) {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
+
         JLabel fieldLabel = new JLabel(label);
         fieldLabel.setOpaque(false);
         fieldLabel.setForeground(Color.WHITE);
@@ -138,6 +145,36 @@ public class DormPassFormDialog extends JDialog {
         panel.add(field, gbc);
     }
 
+    private JDateChooser createDateChooser() {
+        JDateChooser chooser = new JDateChooser();
+        chooser.setDateFormatString("yyyy-MM-dd");
+        chooser.setFont(new Font("Arial", Font.PLAIN, 20));
+        chooser.setOpaque(false);
+        chooser.setPreferredSize(new java.awt.Dimension(25, 38));
+
+        Component editorComponent = chooser.getDateEditor().getUiComponent();
+        if (editorComponent instanceof JTextComponent textComponent) {
+            textComponent.setEditable(false);
+        }
+
+        return chooser;
+    }
+
+    private void setDateField(JDateChooser chooser, String dateText) {
+        try {
+            if (dateText == null || dateText.isBlank()) {
+                chooser.setDate(null);
+                return;
+            }
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            formatter.setLenient(false);
+            chooser.setDate(formatter.parse(dateText.trim()));
+        } catch (ParseException e) {
+            chooser.setDate(null);
+        }
+    }
+
     private JTextField createTextField() {
         JTextField field = new JTextField(25);
         field.setOpaque(false);
@@ -145,7 +182,7 @@ public class DormPassFormDialog extends JDialog {
         field.setCaretColor(Color.WHITE);
         field.setFont(new Font("Arial", Font.PLAIN, 20));
         field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(255, 255, 255, 170), 1),
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 207), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
         return field;
     }
@@ -164,11 +201,13 @@ public class DormPassFormDialog extends JDialog {
     private void onSave() {
         if (passIdField.getText().isBlank() || residentIdField.getText().isBlank()
                 || typeField.getText().isBlank() || reasonField.getText().isBlank()
-                || destinationField.getText().isBlank() || dateAppliedField.getText().isBlank()
+                || destinationField.getText().isBlank() || dateAppliedChooser.getDate() == null
                 || statusField.getText().isBlank()) {
-            StyledMessageDialog.showWarning(this, "Dorm Pass", "Fill in all dorm pass fields.");
+            JOptionPane.showMessageDialog(this, "Fill in all dorm pass fields.");
             return;
         }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         formData = new DormPassFormData(
                 passIdField.getText().trim(),
@@ -176,7 +215,7 @@ public class DormPassFormDialog extends JDialog {
                 typeField.getText().trim(),
                 reasonField.getText().trim(),
                 destinationField.getText().trim(),
-                dateAppliedField.getText().trim(),
+                formatter.format(dateAppliedChooser.getDate()),
                 statusField.getText().trim());
         dispose();
     }
@@ -185,8 +224,8 @@ public class DormPassFormDialog extends JDialog {
         private final String passId;
         private final String residentId;
         private final String type;
-        private final String reason;
         private final String destination;
+        private final String reason;
         private final String dateApplied;
         private final String status;
 
@@ -213,12 +252,12 @@ public class DormPassFormDialog extends JDialog {
             return type;
         }
 
-        public String getReason() {
-            return reason;
-        }
-
         public String getDestination() {
             return destination;
+        }
+
+        public String getReason() {
+            return reason;
         }
 
         public String getDateApplied() {

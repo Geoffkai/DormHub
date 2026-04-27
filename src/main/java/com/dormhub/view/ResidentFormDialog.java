@@ -2,8 +2,8 @@ package com.dormhub.view;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -12,6 +12,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Window;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -22,6 +24,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+
+import com.toedter.calendar.JDateChooser;
 
 public class ResidentFormDialog extends JDialog {
     private static final int SHADOW_MARGIN = 12;
@@ -34,7 +39,7 @@ public class ResidentFormDialog extends JDialog {
     private final JTextField contactNoField = createTextField();
     private final JTextField yearLevelField = createTextField();
     private final JTextField programField = createTextField();
-    private final JTextField moveInDateField = createTextField();
+    private final JDateChooser moveInDateChooser = createDateChooser();
     private final JLabel titleLabel = new JLabel();
 
     private ResidentFormData formData;
@@ -61,7 +66,7 @@ public class ResidentFormDialog extends JDialog {
         addField(formPanel, gbc, 3, "Contact No:", contactNoField);
         addField(formPanel, gbc, 4, "Year Level:", yearLevelField);
         addField(formPanel, gbc, 5, "Program:", programField);
-        addField(formPanel, gbc, 6, "Move-in Date:", moveInDateField);
+        addField(formPanel, gbc, 6, "Move-in Date:", moveInDateChooser);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
         actionsPanel.setOpaque(false);
@@ -92,7 +97,7 @@ public class ResidentFormDialog extends JDialog {
 
         setSize(CONTENT_WIDTH + (SHADOW_MARGIN * 2), CONTENT_HEIGHT + (SHADOW_MARGIN * 2));
         setResizable(false);
-        setLocation(758 - SHADOW_MARGIN, 390 - SHADOW_MARGIN);
+        setLocationRelativeTo(owner);
     }
 
     public static ResidentFormData showAddDialog(Component parent) {
@@ -121,13 +126,14 @@ public class ResidentFormDialog extends JDialog {
         contactNoField.setText(initialData.getContactNo());
         yearLevelField.setText(initialData.getYearLevel());
         programField.setText(initialData.getProgram());
-        moveInDateField.setText(initialData.getMoveInDate());
+        setDateField(moveInDateChooser, initialData.getMoveInDate());
     }
 
-    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JTextField field) {
+    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, Component field) {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
+
         JLabel fieldLabel = new JLabel(label);
         fieldLabel.setOpaque(false);
         fieldLabel.setForeground(Color.WHITE);
@@ -137,6 +143,36 @@ public class ResidentFormDialog extends JDialog {
         gbc.gridx = 1;
         gbc.weightx = 1;
         panel.add(field, gbc);
+    }
+
+    private JDateChooser createDateChooser() {
+        JDateChooser chooser = new JDateChooser();
+        chooser.setDateFormatString("yyyy-MM-dd");
+        chooser.setFont(new Font("Arial", Font.PLAIN, 20));
+        chooser.setOpaque(false);
+        chooser.setPreferredSize(new java.awt.Dimension(25, 38));
+
+        Component editorComponent = chooser.getDateEditor().getUiComponent();
+        if (editorComponent instanceof JTextComponent textComponent) {
+            textComponent.setEditable(false);
+        }
+
+        return chooser;
+    }
+
+    private void setDateField(JDateChooser chooser, String dateText) {
+        try {
+            if (dateText == null || dateText.isBlank()) {
+                chooser.setDate(null);
+                return;
+            }
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            formatter.setLenient(false);
+            chooser.setDate(formatter.parse(dateText.trim()));
+        } catch (ParseException e) {
+            chooser.setDate(null);
+        }
     }
 
     private JTextField createTextField() {
@@ -166,10 +202,12 @@ public class ResidentFormDialog extends JDialog {
         if (residentIdField.getText().isBlank() || lastNameField.getText().isBlank()
                 || firstNameField.getText().isBlank() || contactNoField.getText().isBlank()
                 || yearLevelField.getText().isBlank() || programField.getText().isBlank()
-                || moveInDateField.getText().isBlank()) {
+                || moveInDateChooser.getDate() == null) {
             JOptionPane.showMessageDialog(this, "Fill in all resident fields.");
             return;
         }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         formData = new ResidentFormData(
                 residentIdField.getText().trim(),
@@ -178,7 +216,7 @@ public class ResidentFormDialog extends JDialog {
                 contactNoField.getText().trim(),
                 yearLevelField.getText().trim(),
                 programField.getText().trim(),
-                moveInDateField.getText().trim());
+                formatter.format(moveInDateChooser.getDate()));
         dispose();
     }
 
