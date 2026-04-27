@@ -1,11 +1,19 @@
 package com.dormhub.view;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
 
-import com.dormhub.controller.*;
-import com.dormhub.service.Impl.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
-import java.awt.*;
+import com.dormhub.controller.LoginController;
 
 public class GUIMain {
     public static void main(String[] args) {
@@ -55,23 +63,6 @@ public class GUIMain {
         passwordField.setBorder(BorderFactory.createEmptyBorder());
         passwordField.setOpaque(false);
         loginPage.add(passwordField);
-
-        // Authentication process here
-        String username = usernameField.getText();
-        String password = new String(passwordField.getPassword()); // dont use getText() for passwords
-        // Temporary, add logic later
-        loginButton.addActionListener(e -> {
-            PanelsHandler panelsHandler = new PanelsHandler();
-
-            ContentPanel contentPanel = panelsHandler.getContentPanel();
-
-            GUIController guiController = new GUIController(new ResidentServiceImpl(), new RoomServiceImpl(),
-                    new RoomAssignmentServiceImpl(), new PaymentServiceImpl(), new DormPassServiceImpl(), panelsHandler,
-                    contentPanel);
-            frame.setContentPane(panelsHandler);
-            frame.validate();
-            frame.repaint();
-        });
 
         // Error Login Text
         JLabel Error = new JLabel("Invalid credentials. Try again.");
