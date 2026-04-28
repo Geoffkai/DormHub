@@ -31,6 +31,24 @@ public class GUIMain {
         loginPage.setLayout(null);
         loginPage.setOpaque(false);
 
+        // Login Button
+        ImageIcon loginIcon = ImageResources.loadIcon("/img/LoginBtn.png");
+        JButton loginButton = new JButton(loginIcon);
+        loginButton.setFocusPainted(false);
+        loginButton.setBounds(1322, (int) 785.9, 288, 66);
+        loginPage.add(loginButton);
+
+        loginButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                loginButton.setIcon(ImageResources.loadIcon("/img/LoginBtnHover.png")); // optional hover image
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                loginButton.setIcon(loginIcon); // back to normal
+            }
+        });
+
         // Exit Button
         ImageIcon exitIcon = ImageResources.loadIcon("/img/Exit.png");
         JButton exitButton = new JButton(exitIcon);
@@ -39,19 +57,10 @@ public class GUIMain {
         exitButton.addActionListener(e -> System.exit(0));
         loginPage.add(exitButton);
 
-        // Login Button
-        ImageIcon loginIcon = ImageResources.loadIcon("/img/LoginBtn.png");
-        JButton loginButton = new JButton(loginIcon);
-        loginButton.setFocusPainted(false);
-        loginButton.setBackground(Color.WHITE);
-        loginButton.setForeground(new Color(31, 59, 44, 255));
-        loginButton.setBounds((int) 1321.9, (int) 785.9, 284, (int) 64.9);
-        loginPage.add(loginButton);
-
         // TextField
         JTextField usernameField = new JTextField();
-        usernameField.setBounds((int) 1203.9, (int) 452.8, (int) 558.4, (int) 60.5);
-        usernameField.setFont(new Font("Arial", Font.PLAIN, 18));
+        usernameField.setBounds((int) 1205.9, (int) 452.8, (int) 558.4, (int) 60.5);
+        usernameField.setFont(new Font("Arial", Font.PLAIN, 19));
         usernameField.setBorder(BorderFactory.createEmptyBorder());
         usernameField.setOpaque(false);
         loginPage.add(usernameField);
@@ -59,7 +68,7 @@ public class GUIMain {
         // PasswordField
         JPasswordField passwordField = new JPasswordField();
         passwordField.setBounds((int) 1203.9, 613, (int) 558.4, (int) 60.5);
-        passwordField.setFont(new Font("Arial", Font.PLAIN, 18));
+        passwordField.setFont(new Font("Arial", Font.PLAIN, 19));
         passwordField.setBorder(BorderFactory.createEmptyBorder());
         passwordField.setOpaque(false);
         loginPage.add(passwordField);
@@ -67,8 +76,8 @@ public class GUIMain {
         // Error Login Text
         JLabel Error = new JLabel("Invalid credentials. Try again.");
         Error.setBounds((int) 1145.5, (int) 691.7, (int) 470.1, (int) 38.6);
-        Error.setFont(new Font("Arial", Font.BOLD, 16));
-        Error.setForeground(Color.WHITE);
+        Error.setFont(new Font("Arial", Font.ITALIC, 18));
+        Error.setForeground(new Color(255, 222, 125));
         Error.setVisible(false);
         loginPage.add(Error);
 

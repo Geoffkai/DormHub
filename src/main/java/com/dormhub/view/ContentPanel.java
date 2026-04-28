@@ -311,9 +311,20 @@ public class ContentPanel extends JPanel {
         DeleteBtn.addActionListener(listener);
     }
 
+    public void setExportAction(ActionListener listener) {
+        resetActionListeners(ExportBtn);
+        ExportBtn.addActionListener(listener);
+    }
+
     public void setSearchAction(ActionListener listener) {
         resetActionListeners(searchBtn);
         searchBtn.addActionListener(listener);
+    }
+
+    public void clearSearch() {
+        searchField.setText("");
+        attributeComboBox.setSelectedIndex(attributeComboBox.getItemCount() > 0 ? 0 : -1);
+        sorter.setRowFilter(null);
     }
 
     public Resident getSelectedResident() {

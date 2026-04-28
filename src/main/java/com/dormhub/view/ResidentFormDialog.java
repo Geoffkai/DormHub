@@ -97,7 +97,7 @@ public class ResidentFormDialog extends JDialog {
 
         setSize(CONTENT_WIDTH + (SHADOW_MARGIN * 2), CONTENT_HEIGHT + (SHADOW_MARGIN * 2));
         setResizable(false);
-        setLocationRelativeTo(owner);
+        setLocation(720, 340);
     }
 
     public static ResidentFormData showAddDialog(Component parent) {

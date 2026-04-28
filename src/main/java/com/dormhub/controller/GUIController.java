@@ -1,5 +1,8 @@
 package com.dormhub.controller;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -8,6 +11,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.swing.JFileChooser;
+import javax.swing.JDialog;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import com.dormhub.model.DormPass;
+import com.dormhub.model.Payment;
+import com.dormhub.model.Resident;
+import com.dormhub.model.Room;
+import com.dormhub.model.RoomAssignment;
 import com.dormhub.service.DormPassService;
 import com.dormhub.service.PaymentService;
 import com.dormhub.service.ResidentService;
@@ -57,7 +69,11 @@ public class GUIController {
     }
 
     private void bindResidentActions() {
-        contentPanel.setViewAction(e -> loadResidents());
+        contentPanel.setViewAction(e -> {
+            contentPanel.clearSearch();
+            loadResidents();
+        });
+        contentPanel.setExportAction(e -> exportResidents());
 
         configureAddAction(
             () -> ResidentFormDialog.showAddDialog(contentPanel),
@@ -128,7 +144,11 @@ public class GUIController {
     }
 
     public void bindRoomActions() {
-        contentPanel.setViewAction(e -> loadRooms());
+        contentPanel.setViewAction(e -> {
+            contentPanel.clearSearch();
+            loadRooms();
+        });
+        contentPanel.setExportAction(e -> exportRooms());
 
         configureAddAction(
             () -> RoomFormDialog.showAddDialog(contentPanel),
@@ -181,7 +201,11 @@ public class GUIController {
     }
 
     public void bindAssignmentActions() {
-        contentPanel.setViewAction(e -> loadAssignments());
+        contentPanel.setViewAction(e -> {
+            contentPanel.clearSearch();
+            loadAssignments();
+        });
+        contentPanel.setExportAction(e -> exportAssignments());
 
         configureAddAction(
             () -> AssignmentFormDialog.showAddDialog(contentPanel),
@@ -242,7 +266,11 @@ public class GUIController {
     }
 
     public void bindPaymentActions() {
-        contentPanel.setViewAction(e -> loadPayments());
+        contentPanel.setViewAction(e -> {
+            contentPanel.clearSearch();
+            loadPayments();
+        });
+        contentPanel.setExportAction(e -> exportPayments());
 
         configureAddAction(
             () -> PaymentFormDialog.showAddDialog(contentPanel),
@@ -307,7 +335,11 @@ public class GUIController {
     }
 
     public void bindDormPassActions() {
-        contentPanel.setViewAction(e -> loadDormPasses());
+        contentPanel.setViewAction(e -> {
+            contentPanel.clearSearch();
+            loadDormPasses();
+        });
+        contentPanel.setExportAction(e -> exportDormPasses());
 
         configureAddAction(
             () -> DormPassFormDialog.showAddDialog(contentPanel),
@@ -378,6 +410,80 @@ public class GUIController {
 
     public void bindDashboardActions() {
         // Dashboard currently has no active CRUD bindings.
+    }
+
+    private void exportResidents() {
+        exportToCsv(
+                "residents.csv",
+                new String[] { "Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program",
+                        "Move-in-date" },
+                residentService::findAllResidents,
+                resident -> new Object[] {
+                        resident.getResidentId(),
+                        resident.getFirstName(),
+                        resident.getLastName(),
+                        resident.getContactNo(),
+                        resident.getYearLevel(),
+                        resident.getProgram(),
+                        resident.getMoveInDate()
+                });
+    }
+
+    private void exportRooms() {
+        exportToCsv(
+                "rooms.csv",
+                new String[] { "Room Number", "Room Type", "Capacity", "Current Occupancy" },
+                roomService::findAllRooms,
+                room -> new Object[] {
+                        room.getRoomNo(),
+                        room.getRoomType(),
+                        room.getCapacity(),
+                        room.getCurrentOccupancy()
+                });
+    }
+
+    private void exportAssignments() {
+        exportToCsv(
+                "assignments.csv",
+                new String[] { "Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated" },
+                roomAssignmentService::findAllAssignments,
+                assignment -> new Object[] {
+                        assignment.getAssignmentId(),
+                        assignment.getResidentId(),
+                        assignment.getRoomId(),
+                        assignment.getDateAssigned(),
+                        assignment.getDateVacated()
+                });
+    }
+
+    private void exportPayments() {
+        exportToCsv(
+                "payments.csv",
+                new String[] { "Payment ID", "Resident ID", "Amount", "Payment Date", "Status" },
+                paymentService::findAllPayments,
+                payment -> new Object[] {
+                        payment.getPaymentId(),
+                        payment.getResidentId(),
+                        payment.getAmount(),
+                        payment.getPaymentDate(),
+                        payment.getStatus()
+                });
+    }
+
+    private void exportDormPasses() {
+        exportToCsv(
+                "dorm_passes.csv",
+                new String[] { "Pass ID", "Resident ID", "Type", "Reason", "Destination", "Date Applied", "Status" },
+                dormPassService::findAllDormPasses,
+                dormPass -> new Object[] {
+                        dormPass.getPassId(),
+                        dormPass.getResidentId(),
+                        dormPass.getType(),
+                        dormPass.getReason(),
+                        dormPass.getDestination(),
+                        dormPass.getDateApplied(),
+                        dormPass.getStatus()
+                });
     }
 
     private void loadResidents() {
@@ -522,6 +628,104 @@ public class GUIController {
             tableRenderer.accept(dataSupplier.get());
         } catch (Exception ex) {
             contentPanel.showErrorMessage(errorTitle, errorMessagePrefix + ex.getMessage());
+        }
+    }
+
+    private <T> void exportToCsv(String defaultFileName, String[] headers,
+            Supplier<List<T>> dataSupplier, Function<T, Object[]> rowMapper) {
+        File selectedFile = chooseCsvSaveFile(defaultFileName);
+        if (selectedFile == null) {
+            return;
+        }
+
+        try {
+            writeCsv(selectedFile, headers, dataSupplier.get(), rowMapper);
+            contentPanel.showMessage(formatExportSuccessMessage(selectedFile));
+        } catch (Exception ex) {
+            contentPanel.showErrorMessage("Export Failed", "Failed to export CSV: " + ex.getMessage());
+        }
+    }
+
+    private File chooseCsvSaveFile(String defaultFileName) {
+        PositionedFileChooser fileChooser = new PositionedFileChooser();
+        fileChooser.setDialogTitle("Save CSV File");
+        fileChooser.setSelectedFile(new File(defaultFileName));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
+        fileChooser.setPreferredSize(new java.awt.Dimension(760, 520));
+
+        final boolean[] approved = { false };
+        final JDialog dialog = fileChooser.buildDialog(contentPanel);
+        fileChooser.addActionListener(e -> {
+            approved[0] = JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand());
+            dialog.dispose();
+        });
+
+        dialog.setModal(true);
+        dialog.pack();
+        dialog.setResizable(false);
+        dialog.setLocation(720, 400);
+        dialog.setVisible(true);
+
+        if (!approved[0] || fileChooser.getSelectedFile() == null) {
+            return null;
+        }
+
+        return ensureCsvExtension(fileChooser.getSelectedFile());
+    }
+
+    private File ensureCsvExtension(File file) {
+        if (file.getName().toLowerCase().endsWith(".csv")) {
+            return file;
+        }
+
+        return new File(file.getParentFile(), file.getName() + ".csv");
+    }
+
+    private <T> void writeCsv(File file, String[] headers, List<T> data,
+            Function<T, Object[]> rowMapper) throws IOException {
+        try (FileWriter writer = new FileWriter(file)) {
+            writeCsvRow(writer, headers);
+
+            for (T item : data) {
+                Object[] values = rowMapper.apply(item);
+                String[] csvValues = new String[values.length];
+                for (int i = 0; i < values.length; i++) {
+                    csvValues[i] = values[i] == null ? "" : values[i].toString();
+                }
+                writeCsvRow(writer, csvValues);
+            }
+        }
+    }
+
+    private void writeCsvRow(FileWriter writer, String[] values) throws IOException {
+        for (int i = 0; i < values.length; i++) {
+            if (i > 0) {
+                writer.append(',');
+            }
+            writer.append(escapeCsv(values[i]));
+        }
+        writer.append(System.lineSeparator());
+    }
+
+    private String escapeCsv(String value) {
+        String safeValue = value == null ? "" : value;
+        boolean needsQuotes = safeValue.contains(",") || safeValue.contains("\"")
+                || safeValue.contains("\n") || safeValue.contains("\r");
+
+        if (!needsQuotes) {
+            return safeValue;
+        }
+
+        return "\"" + safeValue.replace("\"", "\"\"") + "\"";
+    }
+
+    private String formatExportSuccessMessage(File file) {
+        return "CSV exported successfully!\n File Name: " + file.getName();
+    }
+
+    private static class PositionedFileChooser extends JFileChooser {
+        private JDialog buildDialog(java.awt.Component parent) {
+            return super.createDialog(parent);
         }
     }
 }

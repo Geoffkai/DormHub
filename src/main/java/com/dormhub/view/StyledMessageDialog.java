@@ -40,7 +40,8 @@ public class StyledMessageDialog extends JDialog {
     private static final int CARD_WIDTH = 420;
     private static final int CARD_HEIGHT = 220;
 
-    private StyledMessageDialog(Window owner, String title, String message, MessageType type) {
+    private StyledMessageDialog(Window owner, String title, String message, MessageType type,
+            int messageFontSize, int messageWidth) {
         super(owner instanceof Frame ? (Frame) owner : null, "", ModalityType.APPLICATION_MODAL);
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 0));
@@ -68,8 +69,8 @@ public class StyledMessageDialog extends JDialog {
         accentBar.setBackground(type.accentColor);
         accentBar.setPreferredSize(new Dimension(0, 4));
 
-        JLabel messageLabel = new JLabel(toHtml(message), SwingConstants.CENTER);
-        messageLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        JLabel messageLabel = new JLabel(toHtml(message, messageWidth), SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.BOLD, messageFontSize));
         messageLabel.setForeground(new Color(46, 36, 30));
 
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -99,29 +100,32 @@ public class StyledMessageDialog extends JDialog {
     }
 
     public static void showInfo(Component parent, String title, String message) {
-        show(parent, title, message, MessageType.INFO);
+        show(parent, title, message, MessageType.INFO, 22, 300);
     }
 
     public static void showSuccess(Component parent, String title, String message) {
-        show(parent, title, message, MessageType.SUCCESS);
+        show(parent, title, message, MessageType.SUCCESS, 22, 300);
     }
 
     public static void showWarning(Component parent, String title, String message) {
-        show(parent, title, message, MessageType.WARNING);
+        show(parent, title, message, MessageType.WARNING, 22, 300);
     }
 
     public static void showError(Component parent, String title, String message) {
-        show(parent, title, message, MessageType.ERROR);
+        show(parent, title, message, MessageType.ERROR, 22, 300);
     }
 
-    private static void show(Component parent, String title, String message, MessageType type) {
+    private static void show(Component parent, String title, String message, MessageType type,
+            int messageFontSize, int messageWidth) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
-        StyledMessageDialog dialog = new StyledMessageDialog(owner, title, message, type);
+        StyledMessageDialog dialog = new StyledMessageDialog(owner, title, message, type, messageFontSize,
+                messageWidth);
         dialog.setVisible(true);
     }
 
-    private static String toHtml(String message) {
-        return "<html><div style='text-align:center; width:300px;'>" + escapeHtml(message) + "</div></html>";
+    private static String toHtml(String message, int messageWidth) {
+        return "<html><div style='text-align:center; width:" + messageWidth + "px;'>" + escapeHtml(message)
+                + "</div></html>";
     }
 
     private static String escapeHtml(String text) {
