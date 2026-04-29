@@ -66,6 +66,7 @@ public class GUIController {
         panelsHandler.setOnDashboardSelected(this::bindDashboardActions);
 
         bindResidentActions();
+        bindDashboardActions();
     }
 
     private void bindResidentActions() {
@@ -409,7 +410,17 @@ public class GUIController {
     }
 
     public void bindDashboardActions() {
-        // Dashboard currently has no active CRUD bindings.
+        try {
+            contentPanel.refreshDashboard(
+                residentService.findAllResidents(),
+                dormPassService.findAllDormPasses(),
+                roomService.findAllRooms(),
+                roomAssignmentService.findAllAssignments(),
+                paymentService.findAllPayments()
+            );
+        } catch (Exception ex) {
+            contentPanel.showErrorMessage("Dashboard", "Failed to load dashboard: " + ex.getMessage());
+        }
     }
 
     private void exportResidents() {
