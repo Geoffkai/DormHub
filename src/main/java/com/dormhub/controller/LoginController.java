@@ -1,22 +1,27 @@
 package com.dormhub.controller;
 
-import javax.swing.*;
-import java.awt.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import com.dormhub.view.PanelsHandler;
-import com.dormhub.service.ResidentService;
-import com.dormhub.service.RoomService;
-import com.dormhub.service.RoomAssignmentService;
-import com.dormhub.service.PaymentService;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 import com.dormhub.service.DormPassService;
-import com.dormhub.service.Impl.ResidentServiceImpl;
-import com.dormhub.service.Impl.RoomServiceImpl;
-import com.dormhub.service.Impl.RoomAssignmentServiceImpl;
-import com.dormhub.service.Impl.PaymentServiceImpl;
 import com.dormhub.service.Impl.DormPassServiceImpl;
+import com.dormhub.service.Impl.PaymentServiceImpl;
+import com.dormhub.service.Impl.ResidentServiceImpl;
+import com.dormhub.service.Impl.RoomAssignmentServiceImpl;
+import com.dormhub.service.Impl.RoomServiceImpl;
+import com.dormhub.service.PaymentService;
+import com.dormhub.service.ResidentService;
+import com.dormhub.service.RoomAssignmentService;
+import com.dormhub.service.RoomService;
+import com.dormhub.util.DBUtil;
+import com.dormhub.view.PanelsHandler;
 
 public class LoginController {
 
@@ -33,17 +38,20 @@ public class LoginController {
         this.errorLabel = errorLabel;
     }
 
-    private String[] loadCredentials() {
+    private String[] loadAppCredentials() {
         Properties props = new Properties();
-        try (InputStream input = getClass().getClassLoader()
-                .getResourceAsStream("db.properties")) {
-            if (input != null) props.load(input);
+
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("db.properties")) {
+            if (input != null) {
+                props.load(input);
+            }
         } catch (IOException e) {
-            return new String[]{"admin", "admin123"};
+            return new String[] { "admin", "admin123" };
         }
-        return new String[]{
-            props.getProperty("app.username", "admin"),
-            props.getProperty("app.password", "admin123")
+
+        return new String[] {
+                props.getProperty("app.username", "admin"),
+                props.getProperty("app.password", "admin123")
         };
     }
 
@@ -65,13 +73,62 @@ public class LoginController {
             return;
         }
 
-        // Credential check
-        String[] creds = loadCredentials();
-        if (username.equals(creds[0]) && password.equals(creds[1])) {
-            goToDashboard();
+        String[] appCredentials = loadAppCredentials();
+
+        if (username.equals(appCredentials[0]) && password.equals(appCredentials[1])) {
+            if (ensureDatabaseCredentials()) {
+                openDashboard(frame);
+            }
         } else {
-            showError("Invalid credentials. Try again.");
+            showError("Invalid app login credentials. Try again.");
             passwordField.setText(""); // clear password on failed attempt
+        }
+    }
+
+    private boolean ensureDatabaseCredentials() {
+        if (DBUtil.canConnectStoredCredentials()) {
+            return true;
+        }
+
+        while (true) {
+            String databaseUrl = DBUtil.getDatabaseUrl();
+            String databaseUser = JOptionPane.showInputDialog(frame, "Enter MySQL Username:", "Database Setup",
+                    JOptionPane.QUESTION_MESSAGE);
+            if (databaseUser == null) {
+                showError("Database setup was cancelled.");
+                return false;
+            }
+
+            JPasswordField databasePasswordField = new JPasswordField();
+            int dialogResult = JOptionPane.showConfirmDialog(
+                    frame,
+                    databasePasswordField,
+                    "Enter MySQL Password",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+
+            if (dialogResult != JOptionPane.OK_OPTION) {
+                showError("Database setup was cancelled.");
+                return false;
+            }
+
+            String databasePassword = new String(databasePasswordField.getPassword());
+
+            if (DBUtil.canConnect(databaseUrl, databaseUser.trim(), databasePassword)) {
+                try {
+                    DBUtil.saveDatabaseCredentials(databaseUrl, databaseUser.trim(), databasePassword);
+                } catch (IOException e) {
+                    showError("Database login succeeded, but the credentials could not be saved.");
+                    return false;
+                }
+                return true;
+            }
+
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Invalid MySQL credentials. Please try again.",
+                    "Database Login Failed",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -80,9 +137,7 @@ public class LoginController {
         errorLabel.setVisible(true);
     }
 
-    private void goToDashboard() {
-        errorLabel.setVisible(false);
-
+    public static void openDashboard(JFrame frame) {
         // Initialize all services
         ResidentService residentService = new ResidentServiceImpl();
         RoomService roomService = new RoomServiceImpl();
@@ -93,7 +148,7 @@ public class LoginController {
         // Build dashboard
         PanelsHandler panelsHandler = new PanelsHandler();
 
-        new GUIController(
+        GUIController controller = new GUIController(
                 residentService,
                 roomService,
                 roomAssignmentService,
@@ -101,6 +156,7 @@ public class LoginController {
                 dormPassService,
                 panelsHandler,
                 panelsHandler.getContentPanel());
+        controller.getClass();
 
         frame.setContentPane(panelsHandler);
         frame.validate();

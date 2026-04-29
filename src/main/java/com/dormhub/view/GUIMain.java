@@ -43,6 +43,7 @@ public class GUIMain {
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 loginButton.setIcon(ImageResources.loadIcon("/img/LoginBtnHover.png")); // optional hover image
             }
+
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 loginButton.setIcon(loginIcon); // back to normal
