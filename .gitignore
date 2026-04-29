@@ -26,3 +26,6 @@ Thumbs.db
 
 # Generated upgrade artifacts
 .github/java-upgrade/
+
+# Local runtime authentication state
+app.env
