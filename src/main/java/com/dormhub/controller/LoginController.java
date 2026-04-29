@@ -1,8 +1,6 @@
 package com.dormhub.controller;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -10,6 +8,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import com.dormhub.auth.AuthService;
 import com.dormhub.service.DormPassService;
 import com.dormhub.service.Impl.DormPassServiceImpl;
 import com.dormhub.service.Impl.PaymentServiceImpl;
@@ -20,7 +19,7 @@ import com.dormhub.service.PaymentService;
 import com.dormhub.service.ResidentService;
 import com.dormhub.service.RoomAssignmentService;
 import com.dormhub.service.RoomService;
-import com.dormhub.util.DBUtil;
+import com.dormhub.util.DatabaseConfigLoader;
 import com.dormhub.view.PanelsHandler;
 
 public class LoginController {
@@ -29,6 +28,7 @@ public class LoginController {
     private final JTextField usernameField;
     private final JPasswordField passwordField;
     private final JLabel errorLabel;
+    private final AuthService authService;
 
     public LoginController(JFrame frame, JTextField usernameField,
             JPasswordField passwordField, JLabel errorLabel) {
@@ -36,23 +36,7 @@ public class LoginController {
         this.usernameField = usernameField;
         this.passwordField = passwordField;
         this.errorLabel = errorLabel;
-    }
-
-    private String[] loadAppCredentials() {
-        Properties props = new Properties();
-
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("db.properties")) {
-            if (input != null) {
-                props.load(input);
-            }
-        } catch (IOException e) {
-            return new String[] { "admin", "admin123" };
-        }
-
-        return new String[] {
-                props.getProperty("app.username", "admin"),
-                props.getProperty("app.password", "admin123")
-        };
+        this.authService = new AuthService();
     }
 
     public void handleLogin() {
@@ -73,9 +57,7 @@ public class LoginController {
             return;
         }
 
-        String[] appCredentials = loadAppCredentials();
-
-        if (username.equals(appCredentials[0]) && password.equals(appCredentials[1])) {
+        if (authService.authenticate(username, password)) {
             if (ensureDatabaseCredentials()) {
                 openDashboard(frame);
             }
@@ -86,12 +68,16 @@ public class LoginController {
     }
 
     private boolean ensureDatabaseCredentials() {
-        if (DBUtil.canConnectStoredCredentials()) {
-            return true;
+        // If stored credentials exist, try them first
+        DatabaseConfigLoader.DatabaseConfig stored = DatabaseConfigLoader.loadDatabaseConfig();
+        if (!stored.user().isBlank() && !stored.password().isBlank()) {
+            if (DatabaseConfigLoader.canConnect(stored.url(), stored.user(), stored.password())) {
+                return true;
+            }
         }
 
         while (true) {
-            String databaseUrl = DBUtil.getDatabaseUrl();
+            String databaseUrl = DatabaseConfigLoader.getDatabaseUrl();
             String databaseUser = JOptionPane.showInputDialog(frame, "Enter MySQL Username:", "Database Setup",
                     JOptionPane.QUESTION_MESSAGE);
             if (databaseUser == null) {
@@ -114,9 +100,9 @@ public class LoginController {
 
             String databasePassword = new String(databasePasswordField.getPassword());
 
-            if (DBUtil.canConnect(databaseUrl, databaseUser.trim(), databasePassword)) {
+            if (DatabaseConfigLoader.canConnect(databaseUrl, databaseUser.trim(), databasePassword)) {
                 try {
-                    DBUtil.saveDatabaseCredentials(databaseUrl, databaseUser.trim(), databasePassword);
+                    DatabaseConfigLoader.saveDatabaseCredentials(databaseUrl, databaseUser.trim(), databasePassword);
                 } catch (IOException e) {
                     showError("Database login succeeded, but the credentials could not be saved.");
                     return false;
