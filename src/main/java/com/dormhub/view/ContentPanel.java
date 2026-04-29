@@ -1,31 +1,17 @@
 package com.dormhub.view;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.sql.Date;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.swing.AbstractButton;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
+import javax.swing.*;
+import javax.swing.border.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableRowSorter;
+import javax.swing.table.*;
 
 import com.dormhub.model.DormPass;
 import com.dormhub.model.Payment;
@@ -39,10 +25,10 @@ public class ContentPanel extends JPanel {
     JButton searchBtn;
 
     // Dashboard panels
-    JPanel TR = new JPanel();
+    JPanel TR   = new JPanel();
     JPanel PDPR = new JPanel();
-    JPanel RA = new JPanel();
-    JPanel RO = new JPanel();
+    JPanel RA   = new JPanel();
+    JPanel RO   = new JPanel();
 
     // Search
     JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -51,8 +37,35 @@ public class ContentPanel extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> sorter;
-    // Scroll pane
     JScrollPane scrollPane;
+
+    // Dashboard colors
+    private static final Color DARK_GREEN  = new Color(31, 59, 44);
+    private static final Color CARD_BG     = Color.WHITE;
+    private static final Color CARD_BORDER = new Color(220, 230, 225);
+    private static final Color TEXT_DARK   = Color.BLACK;
+    private static final Color TEXT_MUTED  = new Color(80, 80, 80);
+
+    // Program color palette
+    private static final Color[] PROGRAM_COLORS = {
+        new Color(52, 152, 219),
+        new Color(46, 204, 113),
+        new Color(231, 76, 60),
+        new Color(155, 89, 182),
+        new Color(230, 126, 34),
+        new Color(26, 188, 156),
+        new Color(241, 196, 15),
+        new Color(236, 72, 153),
+        new Color(99, 110, 114),
+        new Color(108, 92, 231),
+    };
+
+    // Live dashboard data
+    private List<Resident>       _dashResidents    = new ArrayList<>();
+    private List<DormPass>       _dashDormPasses   = new ArrayList<>();
+    private List<Room>           _dashRooms        = new ArrayList<>();
+    private List<RoomAssignment> _dashAssignments  = new ArrayList<>();
+    private List<Payment>        _dashPayments     = new ArrayList<>();
 
     public ContentPanel(Dimension screenSize) {
         setLayout(null);
@@ -60,23 +73,22 @@ public class ContentPanel extends JPanel {
         setOpaque(false);
 
         // Action buttons
-        ViewBtn = makeButton("/img/View all.png", (int) 375.1, (int) 120.1, 238, 60);
-        AddBtn = makeButton("/img/Add.png", (int) 688.3, (int) 120.1, 238, 60);
-        UpdateBtn = makeButton("/img/Update.png", (int) 1001.3, (int) 120.1, 238, 60);
-        DeleteBtn = makeButton("/img/Delete.png", (int) 1314.1, (int) 120.1, 238, 60);
-        ExportBtn = makeButton("/img/Export.png", (int) 1626.8, (int) 120.1, 238, 60);
+        ViewBtn   = makeButton("/img/View all.png", (int) 375.1,  (int) 120.1, 238, 60);
+        AddBtn    = makeButton("/img/Add.png",       (int) 688.3,  (int) 120.1, 238, 60);
+        UpdateBtn = makeButton("/img/Update.png",    (int) 1001.3, (int) 120.1, 238, 60);
+        DeleteBtn = makeButton("/img/Delete.png",    (int) 1314.1, (int) 120.1, 238, 60);
+        ExportBtn = makeButton("/img/Export.png",    (int) 1626.8, (int) 120.1, 238, 60);
 
         // Search bar
         searchField = new JTextField(23);
         searchField.setPreferredSize(new Dimension(356, 31));
         searchField.setFont(new Font("Arial", Font.PLAIN, 20));
 
-        attributeComboBox = new JComboBox<>(new String[] { "" });
+        attributeComboBox = new JComboBox<>(new String[]{""});
         attributeComboBox.setPreferredSize(new Dimension(205, 31));
         attributeComboBox.setFont(new Font("Arial", Font.PLAIN, 20));
         attributeComboBox.setBackground(Color.WHITE);
 
-        // Search Button
         searchBtn = new JButton("Search");
         searchBtn.setPreferredSize(new Dimension(123, 35));
         searchBtn.setBackground(Color.WHITE);
@@ -101,14 +113,12 @@ public class ContentPanel extends JPanel {
         searchPanel.setBackground(new Color(0, 0, 0, 0));
         searchPanel.setBounds((int) 320.5, (int) 223, (int) 1599.5, (int) 58.6);
 
-        // Table Model
+        // Table model
         String[] columnNames = { "Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program",
                 "Move-in-date" };
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
 
         // Table
@@ -130,45 +140,50 @@ public class ContentPanel extends JPanel {
         scrollPane.getViewport().setBackground(Color.WHITE);
         add(scrollPane);
 
-        // Sorter
         sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
-        // Live search: update table as user types or changes selected attribute.
+        // Live search
         searchField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                applySearchFilter();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                applySearchFilter();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                applySearchFilter();
-            }
+            @Override public void insertUpdate(DocumentEvent e)  { applySearchFilter(); }
+            @Override public void removeUpdate(DocumentEvent e)  { applySearchFilter(); }
+            @Override public void changedUpdate(DocumentEvent e) { applySearchFilter(); }
         });
         attributeComboBox.addActionListener(e -> applySearchFilter());
 
-        // Exit Button
+        // Exit button
         ImageIcon exitIcon = ImageResources.loadIcon("/img/ExitGreen.png");
         JButton exitButton = new JButton(exitIcon);
         exitButton.setFocusPainted(false);
         exitButton.setBounds(1840, (int) 26.7, 50, 50);
         exitButton.addActionListener(e -> System.exit(0));
 
-        // Dashboard panels
-        TR.setBounds((int) 444.8, (int) 217.2, 534, 200);
+        // Dashboard panels — adjust Y to sit right below each card's title label
+        // Based on your screenshot: top cards span roughly y=90 to y=385, title ~40px tall
+        // So content starts around y=165. Bottom cards span y=400 to y=900, content ~y=470.
+        TR.setBounds(460, 230, 518, 145);
+        TR.setOpaque(true);
         TR.setBackground(Color.WHITE);
-        PDPR.setBounds((int) 1218.1, (int) 217.2, 534, 200);
+        TR.setLayout(new BorderLayout());
+        TR.setBorder(new EmptyBorder(4, 8, 4, 8));
+
+        PDPR.setBounds((int) 1218.1, 230, 534, 145);
+        PDPR.setOpaque(true);
         PDPR.setBackground(Color.WHITE);
-        RA.setBounds((int) 1126.2, (int) 652.8, 649, 341);
+        PDPR.setLayout(new BorderLayout());
+        PDPR.setBorder(new EmptyBorder(4, 8, 4, 8));
+
+        RA.setBounds((int) 1126.2, 630, 649, 250);
+        RA.setOpaque(true);
         RA.setBackground(Color.WHITE);
-        RO.setBounds((int) 412.5, (int) 639.3, 598, 368);
+        RA.setLayout(new BorderLayout());
+        RA.setBorder(new EmptyBorder(4, 8, 4, 8));
+
+        RO.setBounds((int) 412.5, 620, 598, 260);
+        RO.setOpaque(true);
         RO.setBackground(Color.WHITE);
+        RO.setLayout(new BorderLayout());
+        RO.setBorder(new EmptyBorder(4, 8, 4, 8));
 
         add(searchPanel);
         add(TR);
@@ -182,8 +197,391 @@ public class ContentPanel extends JPanel {
         add(ExportBtn);
         add(exitButton);
 
-        showDashboard(); // initial state
+        showDashboard();
     }
+
+    // ── Dashboard Data Refresh ─────────────────────────────────────────────
+
+    public void refreshDashboard(List<Resident> residents, List<DormPass> dormPasses,
+                                  List<Room> rooms, List<RoomAssignment> assignments,
+                                  List<Payment> payments) {
+        _dashResidents   = residents   != null ? residents   : new ArrayList<>();
+        _dashDormPasses  = dormPasses  != null ? dormPasses  : new ArrayList<>();
+        _dashRooms       = rooms       != null ? rooms       : new ArrayList<>();
+        _dashAssignments = assignments != null ? assignments : new ArrayList<>();
+        _dashPayments    = payments    != null ? payments    : new ArrayList<>();
+        rebuildDashboardPanels();
+    }
+
+    private void rebuildDashboardPanels() {
+        TR.removeAll();
+        PDPR.removeAll();
+        RA.removeAll();
+        RO.removeAll();
+
+        buildTotalResidentsPanel();
+        buildPendingDormPassPanel();
+        buildRecentActivityPanel();
+        buildRoomOccupancyPanel();
+
+        TR.revalidate();   TR.repaint();
+        PDPR.revalidate(); PDPR.repaint();
+        RA.revalidate();   RA.repaint();
+        RO.revalidate();   RO.repaint();
+    }
+
+    // ── TR: Total Residents ────────────────────────────────────────────────
+
+    private void buildTotalResidentsPanel() {
+        Map<String, Integer> programCount = new LinkedHashMap<>();
+        for (Resident r : _dashResidents) {
+            String prog = r.getProgram() == null || r.getProgram().isBlank() ? "Unknown" : r.getProgram();
+            programCount.merge(prog, 1, Integer::sum);
+        }
+        int total = _dashResidents.size();
+
+        JPanel body = new JPanel(new BorderLayout(0, 2));
+        body.setOpaque(false);
+
+        JLabel bigNum = new JLabel(String.valueOf(total), SwingConstants.CENTER);
+        bigNum.setFont(new Font("Arial", Font.BOLD, 56));
+        bigNum.setForeground(Color.BLACK);
+        body.add(bigNum, BorderLayout.NORTH);
+
+        JPanel breakdown = new JPanel();
+        breakdown.setOpaque(false);
+        breakdown.setLayout(new WrapLayout(FlowLayout.LEFT, 6, 2));
+
+        int i = 0;
+        for (Map.Entry<String, Integer> e : programCount.entrySet()) {
+            Color c = PROGRAM_COLORS[i % PROGRAM_COLORS.length];
+            JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
+            item.setOpaque(false);
+            JLabel dot = new JLabel("\u25cf");
+            dot.setFont(new Font("Arial", Font.PLAIN, 13));
+            dot.setForeground(c);
+            JLabel lbl = new JLabel(e.getKey() + " (" + e.getValue() + ")");
+            lbl.setFont(new Font("Arial", Font.PLAIN, 11));
+            lbl.setForeground(Color.BLACK);
+            item.add(dot);
+            item.add(lbl);
+            breakdown.add(item);
+            i++;
+        }
+        body.add(breakdown, BorderLayout.CENTER);
+        TR.add(body, BorderLayout.CENTER);
+    }
+
+    // ── PDPR: Pending Dorm Pass Requests ──────────────────────────────────
+
+    private void buildPendingDormPassPanel() {
+        List<DormPass> pending = new ArrayList<>();
+        for (DormPass dp : _dashDormPasses) {
+            String s = dp.getStatus();
+            if (s == null || s.isBlank() || s.equalsIgnoreCase("Pending")) pending.add(dp);
+        }
+
+        pending.sort((a, b) -> {
+            if (a.getDateApplied() == null && b.getDateApplied() == null) return 0;
+            if (a.getDateApplied() == null) return 1;
+            if (b.getDateApplied() == null) return -1;
+            return b.getDateApplied().compareTo(a.getDateApplied());
+        });
+        List<DormPass> shown = pending.subList(0, Math.min(4, pending.size()));
+
+        JPanel list = new JPanel();
+        list.setOpaque(false);
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+
+        if (shown.isEmpty()) {
+            JLabel none = new JLabel("No pending requests", SwingConstants.CENTER);
+            none.setFont(new Font("Arial", Font.ITALIC, 13));
+            none.setForeground(TEXT_MUTED);
+            none.setAlignmentX(Component.CENTER_ALIGNMENT);
+            list.add(none);
+        } else {
+            for (DormPass dp : shown) {
+                list.add(buildDormPassRow(dp));
+                list.add(Box.createVerticalStrut(3));
+            }
+            if (pending.size() > 4) {
+                JLabel more = new JLabel("+" + (pending.size() - 4) + " more pending\u2026");
+                more.setFont(new Font("Arial", Font.ITALIC, 11));
+                more.setForeground(TEXT_MUTED);
+                more.setAlignmentX(Component.LEFT_ALIGNMENT);
+                list.add(more);
+            }
+        }
+
+        JPanel countBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        countBar.setOpaque(false);
+        JLabel countLbl = new JLabel("Total pending: " + pending.size());
+        countLbl.setFont(new Font("Arial", Font.BOLD, 12));
+        countLbl.setForeground(pending.isEmpty() ? new Color(39, 174, 96) : new Color(192, 57, 43));
+        countBar.add(countLbl);
+
+        PDPR.add(list, BorderLayout.CENTER);
+        PDPR.add(countBar, BorderLayout.SOUTH);
+    }
+
+    private JPanel buildDormPassRow(DormPass dp) {
+        JPanel row = new JPanel(new BorderLayout(6, 0));
+        row.setOpaque(true);
+        row.setBackground(new Color(245, 245, 245));
+        row.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
+            new EmptyBorder(3, 6, 3, 6)
+        ));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+
+        JLabel badge = new JLabel(dp.getType() == null ? "\u2014" : dp.getType());
+        badge.setFont(new Font("Arial", Font.BOLD, 10));
+        badge.setForeground(Color.WHITE);
+        badge.setOpaque(true);
+        badge.setBackground(new Color(52, 152, 219));
+        badge.setBorder(new EmptyBorder(2, 5, 2, 5));
+        badge.setPreferredSize(new Dimension(66, 18));
+        badge.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
+        left.setOpaque(false);
+        left.add(badge);
+
+        String dest = dp.getDestination() == null || dp.getDestination().isBlank() ? "" : " \u2192 " + dp.getDestination();
+        JLabel info = new JLabel("Resident #" + dp.getResidentId() + dest);
+        info.setFont(new Font("Arial", Font.PLAIN, 12));
+        info.setForeground(Color.BLACK);
+
+        JLabel date = new JLabel(dp.getDateApplied() == null ? "" : dp.getDateApplied().toString());
+        date.setFont(new Font("Arial", Font.PLAIN, 10));
+        date.setForeground(TEXT_MUTED);
+
+        row.add(left,  BorderLayout.WEST);
+        row.add(info,  BorderLayout.CENTER);
+        row.add(date,  BorderLayout.EAST);
+        return row;
+    }
+
+    // ── RA: Recent Activity ────────────────────────────────────────────────
+
+    private void buildRecentActivityPanel() {
+        List<ActivityItem> events = new ArrayList<>();
+
+        for (Payment p : _dashPayments) {
+            if (p.getPaymentDate() != null) {
+                events.add(new ActivityItem(p.getPaymentDate(),
+                    "Payment \u20b1" + String.format("%.0f", p.getAmount()) + " \u2014 Resident #" + p.getResidentId(),
+                    "\ud83d\udcb3", new Color(46, 204, 113)));
+            }
+        }
+        for (RoomAssignment a : _dashAssignments) {
+            if (a.getDateAssigned() != null)
+                events.add(new ActivityItem(a.getDateAssigned(),
+                    "Resident #" + a.getResidentId() + " assigned to Room " + a.getRoomId(),
+                    "\ud83c\udfe0", new Color(52, 152, 219)));
+            if (a.getDateVacated() != null)
+                events.add(new ActivityItem(a.getDateVacated(),
+                    "Resident #" + a.getResidentId() + " vacated Room " + a.getRoomId(),
+                    "\ud83d\udce4", new Color(231, 76, 60)));
+        }
+        for (DormPass dp : _dashDormPasses) {
+            if (dp.getDateApplied() != null)
+                events.add(new ActivityItem(dp.getDateApplied(),
+                    "Dorm pass applied \u2014 Resident #" + dp.getResidentId(),
+                    "\ud83d\udccb", new Color(155, 89, 182)));
+        }
+
+        events.sort((a, b) -> b.date.compareTo(a.date));
+        List<ActivityItem> shown = events.subList(0, Math.min(7, events.size()));
+
+        JPanel list = new JPanel();
+        list.setOpaque(false);
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+
+        if (shown.isEmpty()) {
+            JLabel none = new JLabel("No recent activity", SwingConstants.CENTER);
+            none.setFont(new Font("Arial", Font.ITALIC, 13));
+            none.setForeground(TEXT_MUTED);
+            none.setAlignmentX(Component.CENTER_ALIGNMENT);
+            list.add(none);
+        } else {
+            for (ActivityItem item : shown) {
+                list.add(buildActivityRow(item));
+                list.add(Box.createVerticalStrut(3));
+            }
+        }
+
+        RA.add(list, BorderLayout.CENTER);
+    }
+
+    private JPanel buildActivityRow(ActivityItem item) {
+        JPanel row = new JPanel(new BorderLayout(6, 0));
+        row.setOpaque(true);
+        row.setBackground(new Color(245, 245, 245));
+        row.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 3, 0, 0, item.color),
+            new EmptyBorder(4, 6, 4, 6)
+        ));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+
+        JLabel icon = new JLabel(item.icon);
+        icon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 13));
+        icon.setPreferredSize(new Dimension(20, 20));
+
+        JLabel label = new JLabel(item.label);
+        label.setFont(new Font("Arial", Font.PLAIN, 12));
+        label.setForeground(Color.BLACK);
+
+        JLabel date = new JLabel(item.date.toString());
+        date.setFont(new Font("Arial", Font.PLAIN, 10));
+        date.setForeground(TEXT_MUTED);
+
+        row.add(icon,  BorderLayout.WEST);
+        row.add(label, BorderLayout.CENTER);
+        row.add(date,  BorderLayout.EAST);
+        return row;
+    }
+
+    // ── RO: Room Occupancy ─────────────────────────────────────────────────
+
+    private void buildRoomOccupancyPanel() {
+        int totalCapacity  = _dashRooms.stream().mapToInt(Room::getCapacity).sum();
+        int totalOccupied  = _dashRooms.stream().mapToInt(Room::getCurrentOccupancy).sum();
+        int totalAvailable = Math.max(0, totalCapacity - totalOccupied);
+        double pct = totalCapacity == 0 ? 0 : (totalOccupied * 100.0 / totalCapacity);
+
+        JPanel statsBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 2));
+        statsBar.setOpaque(false);
+        statsBar.add(statChip("Capacity",  String.valueOf(totalCapacity),  new Color(52, 152, 219)));
+        statsBar.add(statChip("Occupied",  String.valueOf(totalOccupied),  new Color(192, 57, 43)));
+        statsBar.add(statChip("Available", String.valueOf(totalAvailable), new Color(39, 174, 96)));
+        statsBar.add(statChip("Fill Rate", String.format("%.0f%%", pct),  new Color(80, 80, 80)));
+
+        OccupancyBarChart chart = new OccupancyBarChart(_dashRooms);
+
+        JPanel body = new JPanel(new BorderLayout(0, 4));
+        body.setOpaque(false);
+        body.add(statsBar, BorderLayout.NORTH);
+        body.add(chart,    BorderLayout.CENTER);
+
+        RO.add(body, BorderLayout.CENTER);
+    }
+
+    private JPanel statChip(String label, String value, Color color) {
+        JPanel chip = new JPanel(new BorderLayout(0, 0));
+        chip.setOpaque(true);
+        chip.setBackground(new Color(245, 245, 245));
+        chip.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
+            new EmptyBorder(3, 8, 3, 8)
+        ));
+        JLabel val = new JLabel(value, SwingConstants.CENTER);
+        val.setFont(new Font("Arial", Font.BOLD, 18));
+        val.setForeground(color);
+        JLabel lbl = new JLabel(label, SwingConstants.CENTER);
+        lbl.setFont(new Font("Arial", Font.PLAIN, 10));
+        lbl.setForeground(TEXT_MUTED);
+        chip.add(val, BorderLayout.CENTER);
+        chip.add(lbl, BorderLayout.SOUTH);
+        return chip;
+    }
+
+    // ── Inner classes ──────────────────────────────────────────────────────
+
+    private class OccupancyBarChart extends JPanel {
+        private final List<Room> rooms;
+        OccupancyBarChart(List<Room> rooms) { this.rooms = rooms; setOpaque(false); }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (rooms.isEmpty()) {
+                g.setColor(TEXT_MUTED);
+                g.setFont(new Font("Arial", Font.ITALIC, 13));
+                g.drawString("No room data", 20, getHeight() / 2);
+                return;
+            }
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            int n = Math.min(rooms.size(), 8);
+            int padLeft = 68, padRight = 50, padTop = 6;
+            int barHeight = (getHeight() - padTop * 2) / n - 5;
+            int chartW = getWidth() - padLeft - padRight;
+            g2.setFont(new Font("Arial", Font.PLAIN, 11));
+
+            for (int i = 0; i < n; i++) {
+                Room room = rooms.get(i);
+                int cap = Math.max(1, room.getCapacity());
+                int occ = Math.min(room.getCurrentOccupancy(), cap);
+                int y = padTop + i * (barHeight + 5);
+
+                g2.setColor(Color.BLACK);
+                g2.drawString("Rm " + room.getRoomNo(), 4, y + barHeight - 3);
+
+                g2.setColor(new Color(220, 220, 220));
+                g2.fillRoundRect(padLeft, y, chartW, barHeight, 6, 6);
+
+                int fillW = (int) ((double) occ / cap * chartW);
+                Color barColor = occ >= cap ? new Color(192, 57, 43)
+                    : occ >= cap * 0.75 ? new Color(230, 126, 34)
+                    : new Color(39, 174, 96);
+                if (fillW > 0) {
+                    g2.setColor(barColor);
+                    g2.fillRoundRect(padLeft, y, fillW, barHeight, 6, 6);
+                }
+                g2.setColor(Color.BLACK);
+                g2.drawString(occ + "/" + cap, padLeft + chartW + 4, y + barHeight - 3);
+            }
+            g2.dispose();
+        }
+    }
+
+    private static class ActivityItem {
+        final Date date; final String label, icon; final Color color;
+        ActivityItem(Date date, String label, String icon, Color color) {
+            this.date = date; this.label = label; this.icon = icon; this.color = color;
+        }
+    }
+
+    private static class WrapLayout extends FlowLayout {
+        WrapLayout(int align, int hgap, int vgap) { super(align, hgap, vgap); }
+
+        @Override public Dimension preferredLayoutSize(Container target) { return layoutSize(target, true); }
+        @Override public Dimension minimumLayoutSize(Container target)   { return layoutSize(target, false); }
+
+        private Dimension layoutSize(Container target, boolean preferred) {
+            synchronized (target.getTreeLock()) {
+                int targetWidth = target.getWidth();
+                if (targetWidth == 0) targetWidth = Integer.MAX_VALUE;
+                int hgap = getHgap(), vgap = getVgap();
+                Insets insets = target.getInsets();
+                int maxWidth = targetWidth - (insets.left + insets.right + hgap * 2);
+                int width = 0, height = 0, rowWidth = 0, rowHeight = 0;
+                for (int i = 0; i < target.getComponentCount(); i++) {
+                    Component m = target.getComponent(i);
+                    if (m.isVisible()) {
+                        Dimension d = preferred ? m.getPreferredSize() : m.getMinimumSize();
+                        if (rowWidth + d.width > maxWidth) {
+                            width = Math.max(width, rowWidth);
+                            height += rowHeight + vgap;
+                            rowWidth = 0; rowHeight = 0;
+                        }
+                        if (rowWidth != 0) rowWidth += hgap;
+                        rowWidth += d.width;
+                        rowHeight = Math.max(rowHeight, d.height);
+                    }
+                }
+                width = Math.max(width, rowWidth);
+                height += rowHeight;
+                return new Dimension(width + insets.left + insets.right + hgap * 2,
+                                     height + insets.top + insets.bottom + vgap * 2);
+            }
+        }
+    }
+
+    // ── Visibility toggles ─────────────────────────────────────────────────
 
     private JButton makeButton(String path, int x, int y, int w, int h) {
         JButton btn = new JButton(ImageResources.loadIcon(path));
@@ -208,33 +606,24 @@ public class ContentPanel extends JPanel {
 
     public void showResidents() {
         showManagerPanel(
-                new String[] { "Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program",
-                        "Move-in-date" },
+                new String[]{"Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program", "Move-in-date"},
                 "Residents");
     }
 
     public void showRooms() {
-        showManagerPanel(
-                new String[] { "Room Number", "Room Type", "Capacity", "Current Occupancy" },
-                "Rooms");
+        showManagerPanel(new String[]{"Room Number", "Room Type", "Capacity", "Current Occupancy"}, "Rooms");
     }
 
     public void showAssignments() {
-        showManagerPanel(
-                new String[] { "Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated" },
-                "Assignments");
+        showManagerPanel(new String[]{"Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated"}, "Assignments");
     }
 
     public void showPayments() {
-        showManagerPanel(
-                new String[] { "Payment ID", "Resident ID", "Amount", "Payment Date", "Status" },
-                "Payments");
+        showManagerPanel(new String[]{"Payment ID", "Resident ID", "Amount", "Payment Date", "Status"}, "Payments");
     }
 
     public void showDormPass() {
-        showManagerPanel(
-                new String[] { "Pass ID", "Resident ID", "Type", "Reason", "Destination", "Date Applied", "Status" },
-                "DormPass");
+        showManagerPanel(new String[]{"Pass ID", "Resident ID", "Type", "Reason", "Destination", "Date Applied", "Status"}, "DormPass");
     }
 
     private void showManagerPanel(String[] columnNames, String label) {
@@ -255,21 +644,12 @@ public class ContentPanel extends JPanel {
         tableModel.setColumnIdentifiers(columnNames);
 
         attributeComboBox.removeAllItems();
-        for (String columnName : columnNames) {
-            attributeComboBox.addItem(columnName);
-        }
+        for (String columnName : columnNames) attributeComboBox.addItem(columnName);
 
         bindPlaceholderActions(label);
     }
 
-    // Rebind button actions every time the active panel changes.
-    // Always remove old listeners first, or one click may trigger actions
-    // from previously opened panels (Residents, Rooms, Payments, etc.).
-    // Replace the placeholder listeners below with the real CRUD/search/export
-    // logic.
     private void bindPlaceholderActions(String label) {
-        // Helper for clearing previously attached ActionListeners from a button
-        // before assigning the current panel's behavior.
         resetActionListeners(ViewBtn);
         resetActionListeners(AddBtn);
         resetActionListeners(UpdateBtn);
@@ -277,8 +657,8 @@ public class ContentPanel extends JPanel {
         resetActionListeners(ExportBtn);
         resetActionListeners(searchBtn);
 
-        ViewBtn.addActionListener(e -> System.out.println("View all " + label + " clicked"));
-        AddBtn.addActionListener(e -> System.out.println("Add " + label + " clicked"));
+        ViewBtn.addActionListener(e   -> System.out.println("View all " + label + " clicked"));
+        AddBtn.addActionListener(e    -> System.out.println("Add " + label + " clicked"));
         UpdateBtn.addActionListener(e -> System.out.println("Update " + label + " clicked"));
         DeleteBtn.addActionListener(e -> System.out.println("Delete " + label + " clicked"));
         ExportBtn.addActionListener(e -> System.out.println("Export " + label + " clicked"));
@@ -286,40 +666,18 @@ public class ContentPanel extends JPanel {
     }
 
     private void resetActionListeners(AbstractButton button) {
-        for (java.awt.event.ActionListener listener : button.getActionListeners()) {
+        for (java.awt.event.ActionListener listener : button.getActionListeners())
             button.removeActionListener(listener);
-        }
     }
 
-    public void setViewAction(ActionListener listener) {
-        resetActionListeners(ViewBtn);
-        ViewBtn.addActionListener(listener);
-    }
+    // ── Public action setters ──────────────────────────────────────────────
 
-    public void setAddAction(ActionListener listener) {
-        resetActionListeners(AddBtn);
-        AddBtn.addActionListener(listener);
-    }
-
-    public void setUpdateAction(ActionListener listener) {
-        resetActionListeners(UpdateBtn);
-        UpdateBtn.addActionListener(listener);
-    }
-
-    public void setDeleteAction(ActionListener listener) {
-        resetActionListeners(DeleteBtn);
-        DeleteBtn.addActionListener(listener);
-    }
-
-    public void setExportAction(ActionListener listener) {
-        resetActionListeners(ExportBtn);
-        ExportBtn.addActionListener(listener);
-    }
-
-    public void setSearchAction(ActionListener listener) {
-        resetActionListeners(searchBtn);
-        searchBtn.addActionListener(listener);
-    }
+    public void setViewAction(ActionListener listener)   { resetActionListeners(ViewBtn);   ViewBtn.addActionListener(listener); }
+    public void setAddAction(ActionListener listener)    { resetActionListeners(AddBtn);    AddBtn.addActionListener(listener); }
+    public void setUpdateAction(ActionListener listener) { resetActionListeners(UpdateBtn); UpdateBtn.addActionListener(listener); }
+    public void setDeleteAction(ActionListener listener) { resetActionListeners(DeleteBtn); DeleteBtn.addActionListener(listener); }
+    public void setExportAction(ActionListener listener) { resetActionListeners(ExportBtn); ExportBtn.addActionListener(listener); }
+    public void setSearchAction(ActionListener listener) { resetActionListeners(searchBtn); searchBtn.addActionListener(listener); }
 
     public void clearSearch() {
         searchField.setText("");
@@ -327,175 +685,129 @@ public class ContentPanel extends JPanel {
         sorter.setRowFilter(null);
     }
 
+    // ── Selected row getters ───────────────────────────────────────────────
+
     public Resident getSelectedResident() {
         int viewRow = table.getSelectedRow();
-        if (viewRow < 0) {
-            return null;
-        }
-
-        int modelRow = table.convertRowIndexToModel(viewRow);
+        if (viewRow < 0) return null;
+        int r = table.convertRowIndexToModel(viewRow);
         Resident resident = new Resident();
-        resident.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
-        resident.setFirstName(tableModel.getValueAt(modelRow, 1).toString());
-        resident.setLastName(tableModel.getValueAt(modelRow, 2).toString());
-        resident.setContactNo(tableModel.getValueAt(modelRow, 3).toString());
-        resident.setYearLevel(Integer.parseInt(tableModel.getValueAt(modelRow, 4).toString()));
-        resident.setProgram(tableModel.getValueAt(modelRow, 5).toString());
-        resident.setMoveInDate(Date.valueOf(tableModel.getValueAt(modelRow, 6).toString()));
+        resident.setResidentId(Integer.parseInt(tableModel.getValueAt(r, 0).toString()));
+        resident.setFirstName(tableModel.getValueAt(r, 1).toString());
+        resident.setLastName(tableModel.getValueAt(r, 2).toString());
+        resident.setContactNo(tableModel.getValueAt(r, 3).toString());
+        resident.setYearLevel(Integer.parseInt(tableModel.getValueAt(r, 4).toString()));
+        resident.setProgram(tableModel.getValueAt(r, 5).toString());
+        resident.setMoveInDate(Date.valueOf(tableModel.getValueAt(r, 6).toString()));
         return resident;
     }
 
     public Room getSelectedRoom() {
         int viewRow = table.getSelectedRow();
-        if (viewRow < 0) {
-            return null;
-        }
-
-        int modelRow = table.convertRowIndexToModel(viewRow);
+        if (viewRow < 0) return null;
+        int r = table.convertRowIndexToModel(viewRow);
         Room room = new Room();
-        room.setRoomNo(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
-        room.setRoomType(tableModel.getValueAt(modelRow, 1).toString());
-        room.setCapacity(Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString()));
-        room.setCurrentOccupancy(Integer.parseInt(tableModel.getValueAt(modelRow, 3).toString()));
+        room.setRoomNo(Integer.parseInt(tableModel.getValueAt(r, 0).toString()));
+        room.setRoomType(tableModel.getValueAt(r, 1).toString());
+        room.setCapacity(Integer.parseInt(tableModel.getValueAt(r, 2).toString()));
+        room.setCurrentOccupancy(Integer.parseInt(tableModel.getValueAt(r, 3).toString()));
         return room;
     }
 
     public RoomAssignment getSelectedAssignment() {
         int viewRow = table.getSelectedRow();
-        if (viewRow < 0) {
-            return null;
-        }
-
-        int modelRow = table.convertRowIndexToModel(viewRow);
+        if (viewRow < 0) return null;
+        int r = table.convertRowIndexToModel(viewRow);
         RoomAssignment assignment = new RoomAssignment();
-        assignment.setAssignmentId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
-        assignment.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 1).toString()));
-        assignment.setRoomId(Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString()));
-        assignment.setDateAssigned(Date.valueOf(tableModel.getValueAt(modelRow, 3).toString()));
-
-        Object vacatedValue = tableModel.getValueAt(modelRow, 4);
-        if (vacatedValue != null && !vacatedValue.toString().isBlank()) {
+        assignment.setAssignmentId(Integer.parseInt(tableModel.getValueAt(r, 0).toString()));
+        assignment.setResidentId(Integer.parseInt(tableModel.getValueAt(r, 1).toString()));
+        assignment.setRoomId(Integer.parseInt(tableModel.getValueAt(r, 2).toString()));
+        assignment.setDateAssigned(Date.valueOf(tableModel.getValueAt(r, 3).toString()));
+        Object vacatedValue = tableModel.getValueAt(r, 4);
+        if (vacatedValue != null && !vacatedValue.toString().isBlank())
             assignment.setDateVacated(Date.valueOf(vacatedValue.toString()));
-        }
-
         return assignment;
     }
 
     public Payment getSelectedPayment() {
         int viewRow = table.getSelectedRow();
-        if (viewRow < 0) {
-            return null;
-        }
-
-        int modelRow = table.convertRowIndexToModel(viewRow);
+        if (viewRow < 0) return null;
+        int r = table.convertRowIndexToModel(viewRow);
         Payment payment = new Payment();
-        payment.setPaymentId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
-        payment.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 1).toString()));
-        payment.setAmount(Double.parseDouble(tableModel.getValueAt(modelRow, 2).toString()));
-        payment.setPaymentDate(Date.valueOf(tableModel.getValueAt(modelRow, 3).toString()));
-        payment.setStatus(tableModel.getValueAt(modelRow, 4).toString());
+        payment.setPaymentId(Integer.parseInt(tableModel.getValueAt(r, 0).toString()));
+        payment.setResidentId(Integer.parseInt(tableModel.getValueAt(r, 1).toString()));
+        payment.setAmount(Double.parseDouble(tableModel.getValueAt(r, 2).toString()));
+        payment.setPaymentDate(Date.valueOf(tableModel.getValueAt(r, 3).toString()));
+        payment.setStatus(tableModel.getValueAt(r, 4).toString());
         return payment;
     }
 
     public DormPass getSelectedDormPass() {
         int viewRow = table.getSelectedRow();
-        if (viewRow < 0) {
-            return null;
-        }
-
-        int modelRow = table.convertRowIndexToModel(viewRow);
+        if (viewRow < 0) return null;
+        int r = table.convertRowIndexToModel(viewRow);
         DormPass dormPass = new DormPass();
-        dormPass.setPassId(Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString()));
-        dormPass.setResidentId(Integer.parseInt(tableModel.getValueAt(modelRow, 1).toString()));
-        dormPass.setType(tableModel.getValueAt(modelRow, 2).toString());
-        dormPass.setReason(tableModel.getValueAt(modelRow, 3).toString());
-        dormPass.setDestination(tableModel.getValueAt(modelRow, 4).toString());
-        dormPass.setDateApplied(Date.valueOf(tableModel.getValueAt(modelRow, 5).toString()));
-        dormPass.setStatus(tableModel.getValueAt(modelRow, 6).toString());
+        dormPass.setPassId(Integer.parseInt(tableModel.getValueAt(r, 0).toString()));
+        dormPass.setResidentId(Integer.parseInt(tableModel.getValueAt(r, 1).toString()));
+        dormPass.setType(tableModel.getValueAt(r, 2).toString());
+        dormPass.setReason(tableModel.getValueAt(r, 3).toString());
+        dormPass.setDestination(tableModel.getValueAt(r, 4).toString());
+        dormPass.setDateApplied(Date.valueOf(tableModel.getValueAt(r, 5).toString()));
+        dormPass.setStatus(tableModel.getValueAt(r, 6).toString());
         return dormPass;
     }
 
+    // ── Table loaders ──────────────────────────────────────────────────────
+
     public void showResidentsTable(List<Resident> residents) {
         tableModel.setRowCount(0);
-        for (Resident resident : residents) {
-            tableModel.addRow(new Object[] {
-                    resident.getResidentId(), resident.getFirstName(), resident.getLastName(), resident.getContactNo(),
-                    resident.getYearLevel(), resident.getProgram(), resident.getMoveInDate()
-
-            });
-        }
+        for (Resident resident : residents)
+            tableModel.addRow(new Object[]{resident.getResidentId(), resident.getFirstName(), resident.getLastName(),
+                    resident.getContactNo(), resident.getYearLevel(), resident.getProgram(), resident.getMoveInDate()});
     }
 
     public void showRoomsTable(List<Room> rooms) {
         tableModel.setRowCount(0);
-        for (Room room : rooms) {
-            tableModel.addRow(new Object[] {
-                    room.getRoomNo(), room.getRoomType(), room.getCapacity(), room.getCurrentOccupancy()
-            });
-        }
+        for (Room room : rooms)
+            tableModel.addRow(new Object[]{room.getRoomNo(), room.getRoomType(), room.getCapacity(), room.getCurrentOccupancy()});
     }
 
     public void showAssignmentsTable(List<RoomAssignment> assignments) {
         tableModel.setRowCount(0);
-        for (RoomAssignment assignment : assignments) {
-            tableModel.addRow(new Object[] {
-                    assignment.getAssignmentId(), assignment.getResidentId(), assignment.getRoomId(),
-                    assignment.getDateAssigned(), assignment.getDateVacated()
-            });
-        }
+        for (RoomAssignment a : assignments)
+            tableModel.addRow(new Object[]{a.getAssignmentId(), a.getResidentId(), a.getRoomId(),
+                    a.getDateAssigned(), a.getDateVacated()});
     }
 
     public void showPaymentsTable(List<Payment> payments) {
         tableModel.setRowCount(0);
-        for (Payment payment : payments) {
-            tableModel.addRow(new Object[] {
-                    payment.getPaymentId(), payment.getResidentId(), payment.getAmount(), payment.getPaymentDate(),
-                    payment.getStatus()
-            });
-        }
+        for (Payment payment : payments)
+            tableModel.addRow(new Object[]{payment.getPaymentId(), payment.getResidentId(), payment.getAmount(),
+                    payment.getPaymentDate(), payment.getStatus()});
     }
 
     public void showDormPassesTable(List<DormPass> dormPasses) {
         tableModel.setRowCount(0);
-        for (DormPass dormPass : dormPasses) {
-            tableModel.addRow(new Object[] {
-                    dormPass.getPassId(), dormPass.getResidentId(), dormPass.getType(), dormPass.getReason(),
-                    dormPass.getDestination(), dormPass.getDateApplied(), dormPass.getStatus()
-            });
-        }
+        for (DormPass dormPass : dormPasses)
+            tableModel.addRow(new Object[]{dormPass.getPassId(), dormPass.getResidentId(), dormPass.getType(),
+                    dormPass.getReason(), dormPass.getDestination(), dormPass.getDateApplied(), dormPass.getStatus()});
     }
 
-    public void showMessage(String message) {
-        StyledMessageDialog.showInfo(this, "Message", message);
-    }
+    // ── Dialogs ────────────────────────────────────────────────────────────
 
-    public void showSuccessMessage(String title, String message) {
-        StyledMessageDialog.showSuccess(this, title, message);
-    }
+    public void showMessage(String message)                      { StyledMessageDialog.showInfo(this, "Message", message); }
+    public void showSuccessMessage(String title, String message) { StyledMessageDialog.showSuccess(this, title, message); }
+    public void showWarningMessage(String title, String message) { StyledMessageDialog.showWarning(this, title, message); }
+    public void showErrorMessage(String title, String message)   { StyledMessageDialog.showError(this, title, message); }
 
-    public void showWarningMessage(String title, String message) {
-        StyledMessageDialog.showWarning(this, title, message);
-    }
-
-    public void showErrorMessage(String title, String message) {
-        StyledMessageDialog.showError(this, title, message);
-    }
+    // ── Search filter ──────────────────────────────────────────────────────
 
     private void applySearchFilter() {
         String query = searchField.getText();
-        if (query == null || query.isBlank()) {
-            sorter.setRowFilter(null);
-            return;
-        }
-
+        if (query == null || query.isBlank()) { sorter.setRowFilter(null); return; }
         String safeQuery = "(?i)" + Pattern.quote(query.trim());
         int selectedColumnIndex = attributeComboBox.getSelectedIndex();
-
-        if (selectedColumnIndex < 0) {
-            sorter.setRowFilter(RowFilter.regexFilter(safeQuery));
-            return;
-        }
-
+        if (selectedColumnIndex < 0) { sorter.setRowFilter(RowFilter.regexFilter(safeQuery)); return; }
         sorter.setRowFilter(RowFilter.regexFilter(safeQuery, selectedColumnIndex));
     }
 }
