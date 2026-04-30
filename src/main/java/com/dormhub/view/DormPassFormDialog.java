@@ -188,7 +188,8 @@ public class DormPassFormDialog extends JDialog {
     }
 
     private javax.swing.JComboBox<String> createStatusCombo() {
-        javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(new String[]{"Pending", "Approved", "Denied"});
+        javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(
+                new String[] { "Pending", "Approved", "Denied" });
         combo.setFont(new Font("Arial", Font.PLAIN, 20));
         combo.setOpaque(false);
         combo.setBackground(new Color(255, 255, 255, 200));
@@ -212,9 +213,9 @@ public class DormPassFormDialog extends JDialog {
         String statusText = statusObj == null ? "" : statusObj.toString().trim();
 
         if (passIdField.getText().isBlank() || residentIdField.getText().isBlank()
-            || typeField.getText().isBlank() || reasonField.getText().isBlank()
-            || destinationField.getText().isBlank() || dateAppliedChooser.getDate() == null
-            || statusText.isBlank()) {
+                || typeField.getText().isBlank() || reasonField.getText().isBlank()
+                || destinationField.getText().isBlank() || dateAppliedChooser.getDate() == null
+                || statusText.isBlank()) {
             JOptionPane.showMessageDialog(this, "Fill in all dorm pass fields.");
             return;
         }
@@ -222,13 +223,13 @@ public class DormPassFormDialog extends JDialog {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         formData = new DormPassFormData(
-            passIdField.getText().trim(),
-            residentIdField.getText().trim(),
-            typeField.getText().trim(),
-            reasonField.getText().trim(),
-            destinationField.getText().trim(),
-            formatter.format(dateAppliedChooser.getDate()),
-            statusText);
+                passIdField.getText().trim(),
+                residentIdField.getText().trim(),
+                typeField.getText().trim(),
+                reasonField.getText().trim(),
+                destinationField.getText().trim(),
+                formatter.format(dateAppliedChooser.getDate()),
+                statusText);
         dispose();
     }
 
