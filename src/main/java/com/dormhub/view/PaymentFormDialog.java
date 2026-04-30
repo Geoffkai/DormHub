@@ -36,7 +36,7 @@ public class PaymentFormDialog extends JDialog {
     private final JTextField residentIdField = createTextField();
     private final JTextField amountField = createTextField();
     private final JDateChooser paymentDateChooser = createDateChooser();
-    private final JTextField statusField = createTextField();
+    private final javax.swing.JComboBox<String> statusCombo = createStatusCombo();
     private final JLabel titleLabel = new JLabel();
 
     private PaymentFormData formData;
@@ -61,7 +61,7 @@ public class PaymentFormDialog extends JDialog {
         addField(formPanel, gbc, 1, "Resident ID:", residentIdField);
         addField(formPanel, gbc, 2, "Amount:", amountField);
         addField(formPanel, gbc, 3, "Payment Date:", paymentDateChooser);
-        addField(formPanel, gbc, 4, "Status:", statusField);
+        addField(formPanel, gbc, 4, "Status:", statusCombo);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
         actionsPanel.setOpaque(false);
@@ -119,7 +119,7 @@ public class PaymentFormDialog extends JDialog {
         residentIdField.setText(initialData.getResidentId());
         amountField.setText(initialData.getAmount());
         setDateField(paymentDateChooser, initialData.getPaymentDate());
-        statusField.setText(initialData.getStatus());
+        statusCombo.setSelectedItem(initialData.getStatus());
     }
 
     private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, Component field) {
@@ -180,6 +180,15 @@ public class PaymentFormDialog extends JDialog {
         return field;
     }
 
+    private javax.swing.JComboBox<String> createStatusCombo() {
+        javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(new String[] { "Paid", "Unpaid" });
+        combo.setFont(new Font("Arial", Font.PLAIN, 20));
+        combo.setOpaque(false);
+        combo.setBackground(new Color(255, 255, 255, 200));
+        combo.setPreferredSize(new java.awt.Dimension(25, 38));
+        return combo;
+    }
+
     private void styleButton(JButton button) {
         button.setFont(new Font("Arial", Font.BOLD, 20));
         button.setForeground(Color.BLACK);
@@ -192,9 +201,12 @@ public class PaymentFormDialog extends JDialog {
     }
 
     private void onSave() {
+        Object statusObj = statusCombo.getSelectedItem();
+        String statusText = statusObj == null ? "" : statusObj.toString().trim();
+
         if (paymentIdField.getText().isBlank() || residentIdField.getText().isBlank()
                 || amountField.getText().isBlank() || paymentDateChooser.getDate() == null
-                || statusField.getText().isBlank()) {
+                || statusText.isBlank()) {
             StyledMessageDialog.showWarning(this, "Payment", "Fill in all payment fields.");
             return;
         }
@@ -206,7 +218,7 @@ public class PaymentFormDialog extends JDialog {
                 residentIdField.getText().trim(),
                 amountField.getText().trim(),
                 formatter.format(paymentDateChooser.getDate()),
-                statusField.getText().trim());
+                statusText);
         dispose();
     }
 
