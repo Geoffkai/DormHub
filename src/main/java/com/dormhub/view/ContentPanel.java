@@ -167,15 +167,15 @@ public class ContentPanel extends JPanel {
         TR.setLayout(new BorderLayout());
         TR.setBorder(new EmptyBorder(4, 8, 4, 8));
 
-        PDPR.setBounds((int) 1218.1, 230, 534, 145);
+        PDPR.setBounds((int) 1218.1, (int) 198.1, 535, 240);
         PDPR.setOpaque(true);
-        PDPR.setBackground(Color.WHITE);
+        PDPR.setBackground(new Color(0, 0, 0, 0));
         PDPR.setLayout(new BorderLayout());
         PDPR.setBorder(new EmptyBorder(4, 8, 4, 8));
 
-        RA.setBounds((int) 1126.2, 630, 649, 250);
+        RA.setBounds((int) 1126.2, 630, 649, 373);
         RA.setOpaque(true);
-        RA.setBackground(Color.WHITE);
+        RA.setBackground(new Color(0, 0, 0, 0));
         RA.setLayout(new BorderLayout());
         RA.setBorder(new EmptyBorder(4, 8, 4, 8));
 
@@ -273,7 +273,6 @@ public class ContentPanel extends JPanel {
     }
 
     // ── PDPR: Pending Dorm Pass Requests ──────────────────────────────────
-
     private void buildPendingDormPassPanel() {
         List<DormPass> pending = new ArrayList<>();
         for (DormPass dp : _dashDormPasses) {
@@ -287,41 +286,70 @@ public class ContentPanel extends JPanel {
             if (b.getDateApplied() == null) return -1;
             return b.getDateApplied().compareTo(a.getDateApplied());
         });
-        List<DormPass> shown = pending.subList(0, Math.min(4, pending.size()));
 
+        // --- List ---
         JPanel list = new JPanel();
         list.setOpaque(false);
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
 
-        if (shown.isEmpty()) {
+        if (pending.isEmpty()) {
             JLabel none = new JLabel("No pending requests", SwingConstants.CENTER);
             none.setFont(new Font("Arial", Font.ITALIC, 13));
             none.setForeground(TEXT_MUTED);
             none.setAlignmentX(Component.CENTER_ALIGNMENT);
             list.add(none);
         } else {
-            for (DormPass dp : shown) {
+            for (DormPass dp : pending) {
                 list.add(buildDormPassRow(dp));
-                list.add(Box.createVerticalStrut(3));
-            }
-            if (pending.size() > 4) {
-                JLabel more = new JLabel("+" + (pending.size() - 4) + " more pending\u2026");
-                more.setFont(new Font("Arial", Font.ITALIC, 11));
-                more.setForeground(TEXT_MUTED);
-                more.setAlignmentX(Component.LEFT_ALIGNMENT);
-                list.add(more);
+                list.add(Box.createVerticalStrut(8));
             }
         }
 
-        JPanel countBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        Color dashBg = new Color(31, 59, 44);
+
+        list.setOpaque(true);
+        list.setBackground(dashBg);
+
+        JPanel listWrapper = new JPanel(new BorderLayout());
+        listWrapper.setOpaque(false);
+        listWrapper.add(list, BorderLayout.NORTH);
+
+        listWrapper.setOpaque(true);
+        listWrapper.setBackground(dashBg);
+
+
+        JScrollPane listScrollPane = new JScrollPane(listWrapper) {
+            @Override
+            public void paint(Graphics g) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paint(g);
+            }
+        };
+        listScrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+        listScrollPane.setOpaque(true);
+        listScrollPane.setBackground(dashBg);
+        listScrollPane.getViewport().setOpaque(true);
+        listScrollPane.getViewport().setBackground(dashBg);
+
+
+        // --- Count bar pinned to bottom ---
+        JPanel countBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 2));
         countBar.setOpaque(false);
+        countBar.setBorder(new EmptyBorder(10, 0, 0, 0));
+        countBar.setPreferredSize(new Dimension(0, 30));
         JLabel countLbl = new JLabel("Total pending: " + pending.size());
-        countLbl.setFont(new Font("Arial", Font.BOLD, 12));
-        countLbl.setForeground(pending.isEmpty() ? new Color(39, 174, 96) : new Color(192, 57, 43));
+        countLbl.setFont(new Font("Arial", Font.BOLD, 15));
+        countLbl.setForeground(pending.isEmpty() ? new Color(107, 20, 26) : new Color(255, 255, 255));
         countBar.add(countLbl);
 
-        PDPR.add(list, BorderLayout.CENTER);
+        // --- Clear and rebuild PDPR ---
+        PDPR.removeAll();
+        PDPR.setLayout(new BorderLayout());
+        PDPR.add(listScrollPane, BorderLayout.CENTER);
         PDPR.add(countBar, BorderLayout.SOUTH);
+        PDPR.revalidate();
+        PDPR.repaint();
     }
 
     private JPanel buildDormPassRow(DormPass dp) {
@@ -332,15 +360,15 @@ public class ContentPanel extends JPanel {
             BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
             new EmptyBorder(3, 6, 3, 6)
         ));
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
 
         JLabel badge = new JLabel(dp.getType() == null ? "\u2014" : dp.getType());
-        badge.setFont(new Font("Arial", Font.BOLD, 10));
+        badge.setFont(new Font("Arial", Font.BOLD, 12));
         badge.setForeground(Color.WHITE);
         badge.setOpaque(true);
-        badge.setBackground(new Color(52, 152, 219));
+        badge.setBackground(new Color(31, 59, 44, 174));
         badge.setBorder(new EmptyBorder(2, 5, 2, 5));
-        badge.setPreferredSize(new Dimension(66, 18));
+        badge.setPreferredSize(new Dimension(80, 18));
         badge.setHorizontalAlignment(SwingConstants.CENTER);
 
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
@@ -349,11 +377,11 @@ public class ContentPanel extends JPanel {
 
         String dest = dp.getDestination() == null || dp.getDestination().isBlank() ? "" : " \u2192 " + dp.getDestination();
         JLabel info = new JLabel("Resident #" + dp.getResidentId() + dest);
-        info.setFont(new Font("Arial", Font.PLAIN, 12));
+        info.setFont(new Font("Arial", Font.PLAIN, 15));
         info.setForeground(Color.BLACK);
 
         JLabel date = new JLabel(dp.getDateApplied() == null ? "" : dp.getDateApplied().toString());
-        date.setFont(new Font("Arial", Font.PLAIN, 10));
+        date.setFont(new Font("Arial", Font.ITALIC, 13));
         date.setForeground(TEXT_MUTED);
 
         row.add(left,  BorderLayout.WEST);
@@ -370,48 +398,77 @@ public class ContentPanel extends JPanel {
         for (Payment p : _dashPayments) {
             if (p.getPaymentDate() != null) {
                 events.add(new ActivityItem(p.getPaymentDate(),
-                    "Payment \u20b1" + String.format("%.0f", p.getAmount()) + " \u2014 Resident #" + p.getResidentId(),
-                    "\ud83d\udcb3", new Color(46, 204, 113)));
+                        "Payment \u20b1" + String.format("%.0f", p.getAmount()) + " \u2014 Resident #" + p.getResidentId(),
+                        "\ud83d\udcb3", new Color(43, 112, 0)));
             }
         }
         for (RoomAssignment a : _dashAssignments) {
             if (a.getDateAssigned() != null)
                 events.add(new ActivityItem(a.getDateAssigned(),
-                    "Resident #" + a.getResidentId() + " assigned to Room " + a.getRoomId(),
-                    "\ud83c\udfe0", new Color(52, 152, 219)));
+                        "Resident #" + a.getResidentId() + " assigned to Room " + a.getRoomId(),
+                        "\ud83c\udfe0", new Color(81, 190, 21)));
             if (a.getDateVacated() != null)
                 events.add(new ActivityItem(a.getDateVacated(),
-                    "Resident #" + a.getResidentId() + " vacated Room " + a.getRoomId(),
-                    "\ud83d\udce4", new Color(231, 76, 60)));
+                        "Resident #" + a.getResidentId() + " vacated Room " + a.getRoomId(),
+                        "\ud83d\udce4", new Color(181, 208, 2)));
         }
         for (DormPass dp : _dashDormPasses) {
             if (dp.getDateApplied() != null)
                 events.add(new ActivityItem(dp.getDateApplied(),
-                    "Dorm pass applied \u2014 Resident #" + dp.getResidentId(),
-                    "\ud83d\udccb", new Color(155, 89, 182)));
+                        "Dorm pass applied \u2014 Resident #" + dp.getResidentId(),
+                        "\ud83d\udccb", new Color(224, 182, 3)));
         }
 
         events.sort((a, b) -> b.date.compareTo(a.date));
-        List<ActivityItem> shown = events.subList(0, Math.min(7, events.size()));
+        List<ActivityItem> shown = new ArrayList<>(events); // show all
+
+        Color dashBg = new Color(107, 20, 26);
 
         JPanel list = new JPanel();
-        list.setOpaque(false);
+        list.setOpaque(true);
+        list.setBackground(dashBg);
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
 
         if (shown.isEmpty()) {
             JLabel none = new JLabel("No recent activity", SwingConstants.CENTER);
-            none.setFont(new Font("Arial", Font.ITALIC, 13));
+            none.setFont(new Font("Arial", Font.ITALIC, 15));
             none.setForeground(TEXT_MUTED);
             none.setAlignmentX(Component.CENTER_ALIGNMENT);
             list.add(none);
         } else {
             for (ActivityItem item : shown) {
                 list.add(buildActivityRow(item));
-                list.add(Box.createVerticalStrut(3));
+                list.add(Box.createVerticalStrut(8));
             }
         }
 
-        RA.add(list, BorderLayout.CENTER);
+        JPanel listWrapper = new JPanel(new BorderLayout());
+        listWrapper.setOpaque(true);
+        listWrapper.setBackground(dashBg);
+        listWrapper.add(list, BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane(listWrapper) {
+            @Override
+            public void paint(Graphics g) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paint(g);
+            }
+        };
+        scrollPane.setOpaque(true);
+        scrollPane.setBackground(dashBg);
+        scrollPane.getViewport().setOpaque(true);
+        scrollPane.getViewport().setBackground(dashBg);
+        scrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+        scrollPane.setBorder(null);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        RA.removeAll();
+        RA.setLayout(new BorderLayout());
+        RA.add(scrollPane, BorderLayout.CENTER);
+        RA.revalidate();
+        RA.repaint();
     }
 
     private JPanel buildActivityRow(ActivityItem item) {
@@ -422,18 +479,18 @@ public class ContentPanel extends JPanel {
             BorderFactory.createMatteBorder(0, 3, 0, 0, item.color),
             new EmptyBorder(4, 6, 4, 6)
         ));
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
 
         JLabel icon = new JLabel(item.icon);
         icon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 13));
-        icon.setPreferredSize(new Dimension(20, 20));
+        icon.setPreferredSize(new Dimension(28, 20));
 
         JLabel label = new JLabel(item.label);
-        label.setFont(new Font("Arial", Font.PLAIN, 12));
+        label.setFont(new Font("Arial", Font.PLAIN, 14));
         label.setForeground(Color.BLACK);
 
         JLabel date = new JLabel(item.date.toString());
-        date.setFont(new Font("Arial", Font.PLAIN, 10));
+        date.setFont(new Font("Arial", Font.PLAIN, 12));
         date.setForeground(TEXT_MUTED);
 
         row.add(icon,  BorderLayout.WEST);
