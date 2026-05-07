@@ -271,7 +271,7 @@ public class ContentPanel extends JPanel {
             }
 
             Color c = PROGRAM_COLORS[i % PROGRAM_COLORS.length];
-            JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 3));
+            JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 3));
             item.setOpaque(false);
 
             JLabel dot = new JLabel("\u25cf");
