@@ -176,7 +176,7 @@ public class ContentPanel extends JPanel {
         RA.setLayout(new BorderLayout());
         RA.setBorder(new EmptyBorder(4, 8, 4, 8));
 
-        RO.setBounds((int) 412.5, 640, 598, 260);
+        RO.setBounds((int) 412.5, 640, 598, 368);
         RO.setOpaque(true);
         RO.setBackground(Color.WHITE);
         RO.setLayout(new BorderLayout());
