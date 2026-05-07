@@ -48,16 +48,16 @@ public class ContentPanel extends JPanel {
 
     // Program color palette
     private static final Color[] PROGRAM_COLORS = {
-        new Color(52, 152, 219),
-        new Color(46, 204, 113),
-        new Color(231, 76, 60),
-        new Color(155, 89, 182),
-        new Color(230, 126, 34),
-        new Color(26, 188, 156),
-        new Color(241, 196, 15),
-        new Color(236, 72, 153),
-        new Color(99, 110, 114),
-        new Color(108, 92, 231),
+        new Color(255, 222, 24),
+        new Color(209, 225, 3),
+        new Color(248, 255, 156),
+        new Color(140, 165, 3),
+        new Color(5, 99, 45),
+        new Color(178, 246, 80),
+        new Color(236, 255, 240),
+        new Color(144, 206, 142),
+        new Color(84, 197, 40),
+        new Color(31, 158, 65),
     };
 
     // Live dashboard data
@@ -158,12 +158,9 @@ public class ContentPanel extends JPanel {
         exitButton.setBounds(1840, (int) 26.7, 50, 50);
         exitButton.addActionListener(e -> System.exit(0));
 
-        // Dashboard panels — adjust Y to sit right below each card's title label
-        // Based on your screenshot: top cards span roughly y=90 to y=385, title ~40px tall
-        // So content starts around y=165. Bottom cards span y=400 to y=900, content ~y=470.
-        TR.setBounds(460, 230, 518, 145);
+        TR.setBounds((int) 448.2, 198, 534, 240);
         TR.setOpaque(true);
-        TR.setBackground(Color.WHITE);
+        TR.setBackground(new Color(0, 0, 0, 0));
         TR.setLayout(new BorderLayout());
         TR.setBorder(new EmptyBorder(4, 8, 4, 8));
 
@@ -179,7 +176,7 @@ public class ContentPanel extends JPanel {
         RA.setLayout(new BorderLayout());
         RA.setBorder(new EmptyBorder(4, 8, 4, 8));
 
-        RO.setBounds((int) 412.5, 620, 598, 260);
+        RO.setBounds((int) 412.5, 640, 598, 368);
         RO.setOpaque(true);
         RO.setBackground(Color.WHITE);
         RO.setLayout(new BorderLayout());
@@ -240,36 +237,68 @@ public class ContentPanel extends JPanel {
         }
         int total = _dashResidents.size();
 
-        JPanel body = new JPanel(new BorderLayout(0, 2));
+        JPanel body = new JPanel(new BorderLayout(0, 0));
         body.setOpaque(false);
 
-        JLabel bigNum = new JLabel(String.valueOf(total), SwingConstants.CENTER);
-        bigNum.setFont(new Font("Arial", Font.BOLD, 56));
-        bigNum.setForeground(Color.BLACK);
-        body.add(bigNum, BorderLayout.NORTH);
+        // --- Pie chart on the LEFT ---
+        java.util.List<Integer> values = new ArrayList<>(programCount.values());
+        java.util.List<Color> colors = new ArrayList<>();
+        int colorIndex = 0;
+        for (String ignored : programCount.keySet()) {
+            colors.add(PROGRAM_COLORS[colorIndex % PROGRAM_COLORS.length]);
+            colorIndex++;
+        }
+
+        JPanel pieChart = new PieChartPanel(values, colors, total);
+        pieChart.setOpaque(false);
+        pieChart.setPreferredSize(new Dimension(200, 210));
+
+        // --- Breakdown on the RIGHT ---
 
         JPanel breakdown = new JPanel();
         breakdown.setOpaque(false);
-        breakdown.setLayout(new WrapLayout(FlowLayout.LEFT, 6, 2));
+        breakdown.setLayout(new BoxLayout(breakdown, BoxLayout.Y_AXIS));
 
+        final int itemsPerRow = 3;
+        JPanel currentRow = null;
         int i = 0;
         for (Map.Entry<String, Integer> e : programCount.entrySet()) {
+            if (i % itemsPerRow == 0) {
+                currentRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 2));
+                currentRow.setOpaque(false);
+                currentRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+                breakdown.add(currentRow);
+            }
+
             Color c = PROGRAM_COLORS[i % PROGRAM_COLORS.length];
-            JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
+            JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 3));
             item.setOpaque(false);
+
             JLabel dot = new JLabel("\u25cf");
-            dot.setFont(new Font("Arial", Font.PLAIN, 13));
+            dot.setFont(new Font("Arial", Font.PLAIN, 25));
             dot.setForeground(c);
+
             JLabel lbl = new JLabel(e.getKey() + " (" + e.getValue() + ")");
-            lbl.setFont(new Font("Arial", Font.PLAIN, 11));
-            lbl.setForeground(Color.BLACK);
+            lbl.setFont(new Font("Arial", Font.BOLD, 16));
+            lbl.setForeground(Color.WHITE);
+
             item.add(dot);
             item.add(lbl);
-            breakdown.add(item);
+            currentRow.add(item);
             i++;
         }
-        body.add(breakdown, BorderLayout.CENTER);
+
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+        rightPanel.setOpaque(false);
+        rightPanel.add(breakdown);
+
+        body.add(pieChart, BorderLayout.WEST);
+        body.add(rightPanel, BorderLayout.CENTER);
+
+        TR.removeAll();
         TR.add(body, BorderLayout.CENTER);
+        TR.revalidate();
+        TR.repaint();
     }
 
     // ── PDPR: Pending Dorm Pass Requests ──────────────────────────────────
@@ -507,16 +536,16 @@ public class ContentPanel extends JPanel {
         int totalAvailable = Math.max(0, totalCapacity - totalOccupied);
         double pct = totalCapacity == 0 ? 0 : (totalOccupied * 100.0 / totalCapacity);
 
-        JPanel statsBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 2));
+        JPanel statsBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 3));
         statsBar.setOpaque(false);
-        statsBar.add(statChip("Capacity",  String.valueOf(totalCapacity),  new Color(52, 152, 219)));
-        statsBar.add(statChip("Occupied",  String.valueOf(totalOccupied),  new Color(192, 57, 43)));
-        statsBar.add(statChip("Available", String.valueOf(totalAvailable), new Color(39, 174, 96)));
+        statsBar.add(statChip("Capacity",  String.valueOf(totalCapacity),  new Color(179, 138, 1)));
+        statsBar.add(statChip("Occupied",  String.valueOf(totalOccupied),  new Color(10, 71, 38)));
+        statsBar.add(statChip("Available", String.valueOf(totalAvailable), new Color(3, 175, 74)));
         statsBar.add(statChip("Fill Rate", String.format("%.0f%%", pct),  new Color(80, 80, 80)));
 
         OccupancyBarChart chart = new OccupancyBarChart(_dashRooms);
 
-        JPanel body = new JPanel(new BorderLayout(0, 4));
+        JPanel body = new JPanel(new BorderLayout(2, 4));
         body.setOpaque(false);
         body.add(statsBar, BorderLayout.NORTH);
         body.add(chart,    BorderLayout.CENTER);
@@ -530,13 +559,13 @@ public class ContentPanel extends JPanel {
         chip.setBackground(new Color(245, 245, 245));
         chip.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
-            new EmptyBorder(3, 8, 3, 8)
+            new EmptyBorder(3, 5, 3, 8)
         ));
         JLabel val = new JLabel(value, SwingConstants.CENTER);
-        val.setFont(new Font("Arial", Font.BOLD, 18));
+        val.setFont(new Font("Arial", Font.BOLD, 20));
         val.setForeground(color);
         JLabel lbl = new JLabel(label, SwingConstants.CENTER);
-        lbl.setFont(new Font("Arial", Font.PLAIN, 10));
+        lbl.setFont(new Font("Arial", Font.PLAIN, 12));
         lbl.setForeground(TEXT_MUTED);
         chip.add(val, BorderLayout.CENTER);
         chip.add(lbl, BorderLayout.SOUTH);
@@ -581,9 +610,9 @@ public class ContentPanel extends JPanel {
                 g2.fillRoundRect(padLeft, y, chartW, barHeight, 6, 6);
 
                 int fillW = (int) ((double) occ / cap * chartW);
-                Color barColor = occ >= cap ? new Color(192, 57, 43)
-                    : occ >= cap * 0.75 ? new Color(230, 126, 34)
-                    : new Color(39, 174, 96);
+                Color barColor = occ >= cap ? new Color(43, 112, 0, 255)
+                    : occ >= cap * 0.75 ? new Color(81, 190, 21)
+                    : new Color(181, 208, 2);
                 if (fillW > 0) {
                     g2.setColor(barColor);
                     g2.fillRoundRect(padLeft, y, fillW, barHeight, 6, 6);
@@ -635,6 +664,65 @@ public class ContentPanel extends JPanel {
                 return new Dimension(width + insets.left + insets.right + hgap * 2,
                                      height + insets.top + insets.bottom + vgap * 2);
             }
+        }
+    }
+
+    private static class PieChartPanel extends JPanel {
+        private final java.util.List<Integer> values;
+        private final java.util.List<Color> colors;
+        private final int total;
+
+        PieChartPanel(java.util.List<Integer> values, java.util.List<Color> colors, int total) {
+            this.values = values;
+            this.colors = colors;
+            this.total = total;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int size = Math.min(getWidth(), getHeight()) - 15;
+            int x = (getWidth() - size) / 2;
+            int y = (getHeight() - size) / 2;
+
+            if (total <= 0 || values.isEmpty()) {
+                g2.setColor(new Color(220, 230, 225));
+                g2.fillOval(x, y, size, size);
+            } else {
+                int startAngle = 90;
+                int drawnAngle = 0;
+                for (int i = 0; i < values.size(); i++) {
+                    int arcAngle = (i == values.size() - 1)
+                            ? 360 - drawnAngle
+                            : (int) Math.round((values.get(i) * 360.0) / total);
+                    g2.setColor(colors.get(i % colors.size()));
+                    g2.fillArc(x, y, size, size, startAngle, -arcAngle);
+                    startAngle -= arcAngle;
+                    drawnAngle += arcAngle;
+                }
+            }
+
+            int innerSize = (int) (size * 0.5);
+            int innerX = x + (size - innerSize) / 2;
+            int innerY = y + (size - innerSize) / 2;
+            g2.setColor(new Color(0x1F3B2C));
+            g2.fillOval(innerX, innerY, innerSize, innerSize);
+
+            String totalText = String.valueOf(total);
+            Font numberFont = new Font("Arial", Font.BOLD, 40);
+            FontMetrics numberMetrics = g2.getFontMetrics(numberFont);
+
+            g2.setColor(new Color(0xEAF8F2));
+            g2.setFont(numberFont);
+            int numberX = (getWidth() - numberMetrics.stringWidth(totalText)) / 2;
+            int numberY = (getHeight() + numberMetrics.getAscent()) / 2 - 6;
+            g2.drawString(totalText, numberX, numberY);
+
+            g2.dispose();
         }
     }
 
