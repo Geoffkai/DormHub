@@ -67,6 +67,51 @@ DormHub now starts directly in GUI mode by default.
 ./mvnw exec:java
 ```
 
+## Build A Runnable JAR
+
+To create a packaged executable JAR with all dependencies bundled:
+
+### Windows
+
+```powershell
+.\mvnw.cmd clean package
+java -jar target\dormhub-1.0-SNAPSHOT-jar-with-dependencies.jar
+```
+
+### macOS / Linux
+
+```bash
+./mvnw clean package
+java -jar target/dormhub-1.0-SNAPSHOT-jar-with-dependencies.jar
+```
+
+This JAR includes all application dependencies, so only Java needs to be installed to run it.
+
+## Build A Standalone Application (Windows)
+
+To create a fully standalone app that includes its own Java runtime (no JDK installation required):
+
+### Build the Standalone App
+
+```powershell
+.\mvnw.cmd clean package jpackage:jpackage
+```
+
+This creates a portable application at `target/installer/DormHub/` containing:
+- **DormHub.exe** — Double-click to launch the application
+- **runtime/** — Bundled Java Runtime Environment
+- **app/** — Application files and JAR
+
+### How to Use
+
+1. Copy the entire `target/installer/DormHub/` folder to any location
+2. Double-click `DormHub.exe` to run the application
+3. No Java installation needed on the end-user's machine
+
+### Distributing the App
+
+You can zip the `target/installer/DormHub/` folder for distribution to other Windows machines.
+
 ## Run Tests
 
 ### Windows
