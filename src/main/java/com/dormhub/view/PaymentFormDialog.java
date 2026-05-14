@@ -14,6 +14,7 @@ import java.awt.RenderingHints;
 import java.awt.Window;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -25,6 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
+import com.dormhub.model.Resident;
 import com.toedter.calendar.JDateChooser;
 
 public class PaymentFormDialog extends JDialog {
@@ -33,7 +35,7 @@ public class PaymentFormDialog extends JDialog {
     private static final int CONTENT_HEIGHT = 582;
 
     private String hiddenPaymentId = "";
-    private final JTextField residentIdField = createTextField();
+    private final ResidentSearchField residentIdField;
     private final JTextField amountField = createTextField();
     private final JDateChooser paymentDateChooser = createDateChooser();
     private final javax.swing.JComboBox<String> statusCombo = createStatusCombo();
@@ -41,8 +43,9 @@ public class PaymentFormDialog extends JDialog {
 
     private PaymentFormData formData;
 
-    public PaymentFormDialog(Window owner, String title) {
+    public PaymentFormDialog(Window owner, String title, List<Resident> residents) {
         super(owner instanceof Frame ? (Frame) owner : null, "", ModalityType.APPLICATION_MODAL);
+        this.residentIdField = new ResidentSearchField(residents, new Color(255, 255, 255, 170));
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 0));
 
@@ -94,16 +97,16 @@ public class PaymentFormDialog extends JDialog {
         setLocation(720, 340);
     }
 
-    public static PaymentFormData showAddDialog(Component parent) {
+    public static PaymentFormData showAddDialog(Component parent, List<Resident> residents) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
-        PaymentFormDialog dialog = new PaymentFormDialog(owner, "Add Payment");
+        PaymentFormDialog dialog = new PaymentFormDialog(owner, "Add Payment", residents);
         dialog.setVisible(true);
         return dialog.formData;
     }
 
-    public static PaymentFormData showUpdateDialog(Component parent, PaymentFormData initialData) {
+    public static PaymentFormData showUpdateDialog(Component parent, PaymentFormData initialData, List<Resident> residents) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
-        PaymentFormDialog dialog = new PaymentFormDialog(owner, "Update Payment");
+        PaymentFormDialog dialog = new PaymentFormDialog(owner, "Update Payment", residents);
         dialog.populateFields(initialData);
         dialog.setVisible(true);
         return dialog.formData;

@@ -78,13 +78,13 @@ INSERT INTO resident (resident_id, last_name, first_name, contact_no, year_level
 (202215019, 'Padilla',    'Sophia',    '09351234519', 4, 'BSM',      '2022-08-02'),
 (202215020, 'Herrera',    'Miguel',    '09361234520', 4, 'BAMA',     '2022-08-05');
 
--- ROOMS (5 rooms, male and female)
+-- ROOMS (5 rooms, regular and transient)
 INSERT INTO room (room_number, room_type, capacity, current_occupancy) VALUES
-(101, 'Male',   4, 4),
-(102, 'Male',   4, 3),
-(103, 'Female', 4, 4),
-(104, 'Female', 4, 3),
-(105, 'Male',   4, 2);
+(101, 'Regular',   4, 4),
+(102, 'Regular',   4, 3),
+(103, 'Transient', 4, 4),
+(104, 'Transient', 4, 3),
+(105, 'Regular',   4, 2);
 
 -- ROOM ASSIGNMENTS
 -- Room 101 (Male, full)
@@ -151,14 +151,14 @@ INSERT INTO dorm_pass (resident_id, type, reason, destination, date_applied, sta
 (202515001, 'Overnight', 'Medical appointment',   'Tacloban City',     '2026-02-20', 'Approved'),
 (202415006, 'Overnight', 'Graduation ceremony',   'Ormoc City',        '2026-01-15', 'Approved'),
 (202315011, 'Overnight', 'Family emergency',      'Baybay, Leyte',     '2026-02-01', 'Approved'),
-(202215017, 'Day',       'Grocery run',           'Tacloban City',     '2026-03-01', 'Approved'),
-(202415008, 'Day',       'Dentist appointment',   'Tacloban City',     '2026-03-05', 'Approved'),
+(202215017, 'Home Pass', 'Grocery run',           'Tacloban City',     '2026-03-01', 'Approved'),
+(202415008, 'Home Pass', 'Dentist appointment',   'Tacloban City',     '2026-03-05', 'Approved'),
 
 -- pending passes
 (202515003, 'Overnight', 'Family reunion',        'Carigara, Leyte',   '2026-03-28', 'Pending'),
-(202515004, 'Day',       'Bank transaction',      'Tacloban City',     '2026-03-29', 'Pending'),
+(202515004, 'Home Pass', 'Bank transaction',      'Tacloban City',     '2026-03-29', 'Pending'),
 (202315015, 'Overnight', 'Sister\'s wedding',     'Maasin, Leyte',     '2026-03-30', 'Pending'),
-(202215016, 'Day',       'Pickup package',        'Tacloban City',     '2026-04-01', 'Pending'),
+(202215016, 'Home Pass', 'Pickup package',        'Tacloban City',     '2026-04-01', 'Pending'),
 
 -- denied passes
 (202415010, 'Overnight', 'Beach trip with friends', 'Samar',           '2026-02-10', 'Denied'),

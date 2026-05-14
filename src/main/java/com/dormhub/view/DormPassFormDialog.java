@@ -14,6 +14,7 @@ import java.awt.RenderingHints;
 import java.awt.Window;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -26,6 +27,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
+import com.dormhub.model.Resident;
+
 import com.toedter.calendar.JDateChooser;
 
 public class DormPassFormDialog extends JDialog {
@@ -34,7 +37,7 @@ public class DormPassFormDialog extends JDialog {
     private static final int CONTENT_HEIGHT = 582;
 
     private String hiddenPassId = "";
-    private final JTextField residentIdField = createTextField();
+    private final ResidentSearchField residentIdField;
     private final javax.swing.JComboBox<String> typeCombo = createTypeCombo();
     private final JTextField reasonField = createTextField();
     private final JTextField destinationField = createTextField();
@@ -44,8 +47,9 @@ public class DormPassFormDialog extends JDialog {
 
     private DormPassFormData formData;
 
-    public DormPassFormDialog(Window owner, String title) {
+    public DormPassFormDialog(Window owner, String title, List<Resident> residents) {
         super(owner instanceof Frame ? (Frame) owner : null, "", ModalityType.APPLICATION_MODAL);
+        this.residentIdField = new ResidentSearchField(residents, new Color(255, 255, 255, 207));
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 0));
 
@@ -99,16 +103,16 @@ public class DormPassFormDialog extends JDialog {
         setLocation(720, 340);
     }
 
-    public static DormPassFormData showAddDialog(Component parent) {
+    public static DormPassFormData showAddDialog(Component parent, List<Resident> residents) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
-        DormPassFormDialog dialog = new DormPassFormDialog(owner, "Add Dorm Pass");
+        DormPassFormDialog dialog = new DormPassFormDialog(owner, "Add Dorm Pass", residents);
         dialog.setVisible(true);
         return dialog.formData;
     }
 
-    public static DormPassFormData showUpdateDialog(Component parent, DormPassFormData initialData) {
+    public static DormPassFormData showUpdateDialog(Component parent, DormPassFormData initialData, List<Resident> residents) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
-        DormPassFormDialog dialog = new DormPassFormDialog(owner, "Update Dorm Pass");
+        DormPassFormDialog dialog = new DormPassFormDialog(owner, "Update Dorm Pass", residents);
         dialog.populateFields(initialData);
         dialog.setVisible(true);
         return dialog.formData;
@@ -184,7 +188,7 @@ public class DormPassFormDialog extends JDialog {
 
     private javax.swing.JComboBox<String> createTypeCombo() {
         javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(
-                new String[] { "Day", "Overnight" });
+                new String[] { "Overnight", "Late Night", "Home Pass" });
         combo.setFont(new Font("Arial", Font.PLAIN, 20));
         combo.setOpaque(false);
         combo.setBackground(new Color(255, 255, 255, 200));
