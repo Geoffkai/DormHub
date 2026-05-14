@@ -4,30 +4,41 @@ import java.sql.Date;
 import java.util.List;
 
 import com.dormhub.dao.PaymentDAO;
+import com.dormhub.dao.ResidentDAO;
 import com.dormhub.dao.impl.PaymentDAOImpl;
+import com.dormhub.dao.impl.ResidentDAOImpl;
 import com.dormhub.model.Payment;
 import com.dormhub.service.PaymentService;
 
 public class PaymentServiceImpl implements PaymentService {
         private final PaymentDAO paymentDAO;
+        private final ResidentDAO residentDAO;
 
         public PaymentServiceImpl() {
-                this(new PaymentDAOImpl());
+                this(new PaymentDAOImpl(), new ResidentDAOImpl());
         }
 
         public PaymentServiceImpl(PaymentDAO paymentDAO) {
+                this(paymentDAO, new ResidentDAOImpl());
+        }
+
+        public PaymentServiceImpl(PaymentDAO paymentDAO, ResidentDAO residentDAO) {
                 this.paymentDAO = paymentDAO;
+                this.residentDAO = residentDAO;
         }
 
         @Override
-        public void addPayment(int paymentId, int residentId, double amount, Date paymentDate, String status) {
-                validatePaymentFields(paymentId, residentId, amount, paymentDate, status);
+        public void addPayment(int residentId, double amount, Date paymentDate, String status) {
+                if (residentId <= 0) throw new IllegalArgumentException("Resident ID must be positive");
+                if (amount <= 0)     throw new IllegalArgumentException("Amount must be positive");
+                if (paymentDate == null) throw new IllegalArgumentException("Payment date cannot be null");
+                if (status == null || status.trim().isEmpty()) throw new IllegalArgumentException("Payment status cannot be null or empty");
 
-                if (paymentDAO.findById(paymentId) != null) {
-                        throw new IllegalArgumentException("Payment ID already exists: " + paymentId);
+                if (residentDAO.findById(residentId) == null) {
+                        throw new IllegalArgumentException("Resident not found: " + residentId);
                 }
 
-                Payment payment = buildPayment(paymentId, residentId, amount, paymentDate, status);
+                Payment payment = buildPayment(0, residentId, amount, paymentDate, status);
                 paymentDAO.insert(payment);
         }
 
@@ -38,6 +49,10 @@ public class PaymentServiceImpl implements PaymentService {
                 Payment payment = paymentDAO.findById(paymentId);
                 if (payment == null) {
                         throw new IllegalArgumentException("Payment not found: " + paymentId);
+                }
+
+                if (residentDAO.findById(residentId) == null) {
+                        throw new IllegalArgumentException("Resident not found: " + residentId);
                 }
 
                 payment = buildPayment(paymentId, residentId, amount, paymentDate, status);

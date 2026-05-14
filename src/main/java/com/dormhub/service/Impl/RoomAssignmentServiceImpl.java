@@ -3,34 +3,61 @@ package com.dormhub.service.Impl;
 import java.sql.Date;
 import java.util.List;
 
+import com.dormhub.dao.ResidentDAO;
 import com.dormhub.dao.RoomAssignmentDAO;
+import com.dormhub.dao.RoomDAO;
+import com.dormhub.dao.impl.ResidentDAOImpl;
 import com.dormhub.dao.impl.RoomAssignmentDAOImpl;
+import com.dormhub.dao.impl.RoomDAOImpl;
 import com.dormhub.model.RoomAssignment;
 import com.dormhub.service.RoomAssignmentService;
 
 public class RoomAssignmentServiceImpl implements RoomAssignmentService {
     private final RoomAssignmentDAO roomAssignmentDAO;
+    private final ResidentDAO residentDAO;
+    private final RoomDAO roomDAO;
 
     public RoomAssignmentServiceImpl() {
-        this(new RoomAssignmentDAOImpl());
+        this(new RoomAssignmentDAOImpl(), new ResidentDAOImpl(), new RoomDAOImpl());
     }
 
     public RoomAssignmentServiceImpl(RoomAssignmentDAO roomAssignmentDAO) {
+        this(roomAssignmentDAO, new ResidentDAOImpl(), new RoomDAOImpl());
+    }
+
+    public RoomAssignmentServiceImpl(RoomAssignmentDAO roomAssignmentDAO, ResidentDAO residentDAO, RoomDAO roomDAO) {
         this.roomAssignmentDAO = roomAssignmentDAO;
+        this.residentDAO = residentDAO;
+        this.roomDAO = roomDAO;
     }
 
     @Override
-    public void addRoomAssignment(int assignmentId, int residentId, int roomId, Date dateAssigned,
-            Date dateVacated) {
-        validateRoomAssignmentFields(assignmentId, residentId, roomId, dateAssigned);
+    public void addRoomAssignment(int residentId, int roomId, Date dateAssigned, Date dateVacated) {
+        if (residentId <= 0) throw new IllegalArgumentException("Resident ID must be positive");
+        if (roomId <= 0)     throw new IllegalArgumentException("Room ID must be positive");
+        if (dateAssigned == null) throw new IllegalArgumentException("Date assigned cannot be null");
 
-        if (roomAssignmentDAO.findById(assignmentId) != null) {
-            throw new IllegalArgumentException("Assignment ID already exists: " + assignmentId);
+        if (residentDAO.findById(residentId) == null) {
+            throw new IllegalArgumentException("Resident not found: " + residentId);
         }
 
-        RoomAssignment assignment = buildRoomAssignment(assignmentId, residentId, roomId, dateAssigned,
-                dateVacated);
+        com.dormhub.model.Room room = roomDAO.findByRoomNo(roomId);
+        if (room == null) {
+            throw new IllegalArgumentException("Room not found: " + roomId);
+        }
+
+        if (dateVacated == null && room.getCurrentOccupancy() >= room.getCapacity()) {
+            throw new IllegalArgumentException(
+                    "Room " + roomId + " is already full (" + room.getCapacity() + "/" + room.getCapacity() + ").");
+        }
+
+        RoomAssignment assignment = buildRoomAssignment(0, residentId, roomId, dateAssigned, dateVacated);
         roomAssignmentDAO.insert(assignment);
+
+        if (dateVacated == null) {
+            room.setCurrentOccupancy(room.getCurrentOccupancy() + 1);
+            roomDAO.update(room);
+        }
     }
 
     @Override
@@ -38,13 +65,52 @@ public class RoomAssignmentServiceImpl implements RoomAssignmentService {
             Date dateVacated) {
         validateRoomAssignmentFields(assignmentId, residentId, roomId, dateAssigned);
 
-        RoomAssignment assignment = roomAssignmentDAO.findById(assignmentId);
-        if (assignment == null) {
+        RoomAssignment oldAssignment = roomAssignmentDAO.findById(assignmentId);
+        if (oldAssignment == null) {
             throw new IllegalArgumentException("Assignment not found: " + assignmentId);
         }
 
-        assignment = buildRoomAssignment(assignmentId, residentId, roomId, dateAssigned, dateVacated);
-        roomAssignmentDAO.update(assignment);
+        if (residentDAO.findById(residentId) == null) {
+            throw new IllegalArgumentException("Resident not found: " + residentId);
+        }
+
+        com.dormhub.model.Room newRoom = roomDAO.findByRoomNo(roomId);
+        if (newRoom == null) {
+            throw new IllegalArgumentException("Room not found: " + roomId);
+        }
+
+        boolean wasActive = oldAssignment.getDateVacated() == null;
+        boolean willBeActive = dateVacated == null;
+        boolean roomChanged = oldAssignment.getRoomId() != roomId;
+
+        if (willBeActive && (!wasActive || roomChanged) && newRoom.getCurrentOccupancy() >= newRoom.getCapacity()) {
+            throw new IllegalArgumentException(
+                    "Room " + roomId + " is already full (" + newRoom.getCapacity() + "/" + newRoom.getCapacity() + ").");
+        }
+
+        roomAssignmentDAO.update(buildRoomAssignment(assignmentId, residentId, roomId, dateAssigned, dateVacated));
+
+        if (roomChanged) {
+            if (wasActive) {
+                com.dormhub.model.Room oldRoom = roomDAO.findByRoomNo(oldAssignment.getRoomId());
+                if (oldRoom != null && oldRoom.getCurrentOccupancy() > 0) {
+                    oldRoom.setCurrentOccupancy(oldRoom.getCurrentOccupancy() - 1);
+                    roomDAO.update(oldRoom);
+                }
+            }
+            if (willBeActive) {
+                newRoom.setCurrentOccupancy(newRoom.getCurrentOccupancy() + 1);
+                roomDAO.update(newRoom);
+            }
+        } else {
+            if (wasActive && !willBeActive && newRoom.getCurrentOccupancy() > 0) {
+                newRoom.setCurrentOccupancy(newRoom.getCurrentOccupancy() - 1);
+                roomDAO.update(newRoom);
+            } else if (!wasActive && willBeActive) {
+                newRoom.setCurrentOccupancy(newRoom.getCurrentOccupancy() + 1);
+                roomDAO.update(newRoom);
+            }
+        }
     }
 
     @Override
@@ -52,7 +118,21 @@ public class RoomAssignmentServiceImpl implements RoomAssignmentService {
         if (assignmentId <= 0) {
             throw new IllegalArgumentException("Assignment ID must be positive");
         }
+
+        RoomAssignment assignment = roomAssignmentDAO.findById(assignmentId);
+        if (assignment == null) {
+            throw new IllegalArgumentException("Assignment not found: " + assignmentId);
+        }
+
         roomAssignmentDAO.delete(assignmentId);
+
+        if (assignment.getDateVacated() == null) {
+            com.dormhub.model.Room room = roomDAO.findByRoomNo(assignment.getRoomId());
+            if (room != null && room.getCurrentOccupancy() > 0) {
+                room.setCurrentOccupancy(room.getCurrentOccupancy() - 1);
+                roomDAO.update(room);
+            }
+        }
     }
 
     @Override

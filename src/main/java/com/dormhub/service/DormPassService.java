@@ -6,8 +6,7 @@ import java.util.List;
 import com.dormhub.model.DormPass;
 
 public interface DormPassService {
-    void addDormPass(int passId, int residentId, String type, String reason, String destination, Date dateApplied,
-            String status);
+    void addDormPass(int residentId, String type, String reason, String destination, Date dateApplied, String status);
 
     void updateDormPass(int passId, int residentId, String type, String reason, String destination, Date dateApplied,
             String status);

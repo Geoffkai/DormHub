@@ -20,16 +20,15 @@ public class DormPassServiceImpl implements DormPassService {
     }
 
     @Override
-    public void addDormPass(int passId, int residentId, String type, String reason, String destination,
-            Date dateApplied,
+    public void addDormPass(int residentId, String type, String reason, String destination, Date dateApplied,
             String status) {
-        validateDormPassFields(passId, residentId, type, reason, destination, status);
+        if (residentId <= 0) throw new IllegalArgumentException("Resident ID must be positive.");
+        if (type == null || type.isBlank()) throw new IllegalArgumentException("Type is required.");
+        if (reason == null || reason.isBlank()) throw new IllegalArgumentException("Reason is required.");
+        if (destination == null || destination.isBlank()) throw new IllegalArgumentException("Destination is required.");
+        if (status == null || status.isBlank()) throw new IllegalArgumentException("Status is required.");
 
-        if (dormPassDAO.findById(passId) != null) {
-            throw new IllegalArgumentException("Dorm pass ID already exists: " + passId);
-        }
-
-        DormPass dormPass = buildDormPass(passId, residentId, type, reason, destination, dateApplied, status);
+        DormPass dormPass = buildDormPass(0, residentId, type, reason, destination, dateApplied, status);
         dormPassDAO.insert(dormPass);
     }
 

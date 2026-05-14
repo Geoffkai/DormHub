@@ -6,7 +6,7 @@ import java.util.List;
 import com.dormhub.model.Payment;
 
 public interface PaymentService {
-    void addPayment(int paymentId, int residentId, double amount, Date paymentDate, String status);
+    void addPayment(int residentId, double amount, Date paymentDate, String status);
 
     void updatePayment(int paymentId, int residentId, double amount, Date paymentDate, String status);
 

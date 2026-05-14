@@ -38,7 +38,7 @@ public class ResidentFormDialog extends JDialog {
     private final JTextField firstNameField = createTextField();
     private final JTextField contactNoField = createTextField();
     private final JTextField yearLevelField = createTextField();
-    private final JTextField programField = createTextField();
+    private final javax.swing.JComboBox<String> programCombo = createProgramCombo();
     private final JDateChooser moveInDateChooser = createDateChooser();
     private final JLabel titleLabel = new JLabel();
 
@@ -65,7 +65,7 @@ public class ResidentFormDialog extends JDialog {
         addField(formPanel, gbc, 2, "First Name:", firstNameField);
         addField(formPanel, gbc, 3, "Contact No:", contactNoField);
         addField(formPanel, gbc, 4, "Year Level:", yearLevelField);
-        addField(formPanel, gbc, 5, "Program:", programField);
+        addField(formPanel, gbc, 5, "Program:", programCombo);
         addField(formPanel, gbc, 6, "Move-in Date:", moveInDateChooser);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
@@ -125,7 +125,7 @@ public class ResidentFormDialog extends JDialog {
         firstNameField.setText(initialData.getFirstName());
         contactNoField.setText(initialData.getContactNo());
         yearLevelField.setText(initialData.getYearLevel());
-        programField.setText(initialData.getProgram());
+        programCombo.setSelectedItem(initialData.getProgram());
         setDateField(moveInDateChooser, initialData.getMoveInDate());
     }
 
@@ -143,6 +143,16 @@ public class ResidentFormDialog extends JDialog {
         gbc.gridx = 1;
         gbc.weightx = 1;
         panel.add(field, gbc);
+    }
+
+    private javax.swing.JComboBox<String> createProgramCombo() {
+        javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(
+                new String[] { "BALit", "BAMA", "BAPolSci", "BAPsych", "BSEcon", "BSAM", "BSBio", "BSCS", "BSA", "BSM" });
+        combo.setFont(new Font("Arial", Font.PLAIN, 20));
+        combo.setOpaque(false);
+        combo.setBackground(new Color(255, 255, 255, 200));
+        combo.setPreferredSize(new java.awt.Dimension(25, 38));
+        return combo;
     }
 
     private JDateChooser createDateChooser() {
@@ -201,7 +211,7 @@ public class ResidentFormDialog extends JDialog {
     private void onSave() {
         if (residentIdField.getText().isBlank() || lastNameField.getText().isBlank()
                 || firstNameField.getText().isBlank() || contactNoField.getText().isBlank()
-                || yearLevelField.getText().isBlank() || programField.getText().isBlank()
+                || yearLevelField.getText().isBlank()
                 || moveInDateChooser.getDate() == null) {
             JOptionPane.showMessageDialog(this, "Fill in all resident fields.");
             return;
@@ -215,7 +225,7 @@ public class ResidentFormDialog extends JDialog {
                 firstNameField.getText().trim(),
                 contactNoField.getText().trim(),
                 yearLevelField.getText().trim(),
-                programField.getText().trim(),
+                (String) programCombo.getSelectedItem(),
                 formatter.format(moveInDateChooser.getDate()));
         dispose();
     }

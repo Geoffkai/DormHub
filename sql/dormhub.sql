@@ -3,7 +3,7 @@ USE dormhub;
 
 CREATE TABLE room (
     room_number     INT(3)          PRIMARY KEY,
-    room_type       VARCHAR(6)      NOT NULL CHECK (room_type IN ('Male', 'Female')),
+    room_type       VARCHAR(9)      NOT NULL CHECK (room_type IN ('Regular', 'Transient')),
     capacity        INT(1)          NOT NULL,
     current_occupancy INT(1)        NOT NULL DEFAULT 0,
     CONSTRAINT chk_occupancy CHECK (current_occupancy <= capacity)

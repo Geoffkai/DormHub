@@ -32,7 +32,7 @@ public class PaymentFormDialog extends JDialog {
     private static final int CONTENT_WIDTH = 720;
     private static final int CONTENT_HEIGHT = 582;
 
-    private final JTextField paymentIdField = createTextField();
+    private String hiddenPaymentId = "";
     private final JTextField residentIdField = createTextField();
     private final JTextField amountField = createTextField();
     private final JDateChooser paymentDateChooser = createDateChooser();
@@ -57,11 +57,10 @@ public class PaymentFormDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        addField(formPanel, gbc, 0, "Payment ID:", paymentIdField);
-        addField(formPanel, gbc, 1, "Resident ID:", residentIdField);
-        addField(formPanel, gbc, 2, "Amount:", amountField);
-        addField(formPanel, gbc, 3, "Payment Date:", paymentDateChooser);
-        addField(formPanel, gbc, 4, "Status:", statusCombo);
+        addField(formPanel, gbc, 0, "Resident ID:", residentIdField);
+        addField(formPanel, gbc, 1, "Amount:", amountField);
+        addField(formPanel, gbc, 2, "Payment Date:", paymentDateChooser);
+        addField(formPanel, gbc, 3, "Status:", statusCombo);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
         actionsPanel.setOpaque(false);
@@ -98,8 +97,6 @@ public class PaymentFormDialog extends JDialog {
     public static PaymentFormData showAddDialog(Component parent) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         PaymentFormDialog dialog = new PaymentFormDialog(owner, "Add Payment");
-        dialog.paymentIdField.setEditable(true);
-        dialog.paymentIdField.setEnabled(true);
         dialog.setVisible(true);
         return dialog.formData;
     }
@@ -108,14 +105,12 @@ public class PaymentFormDialog extends JDialog {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         PaymentFormDialog dialog = new PaymentFormDialog(owner, "Update Payment");
         dialog.populateFields(initialData);
-        dialog.paymentIdField.setEditable(false);
-        dialog.paymentIdField.setEnabled(false);
         dialog.setVisible(true);
         return dialog.formData;
     }
 
     private void populateFields(PaymentFormData initialData) {
-        paymentIdField.setText(initialData.getPaymentId());
+        hiddenPaymentId = initialData.getPaymentId();
         residentIdField.setText(initialData.getResidentId());
         amountField.setText(initialData.getAmount());
         setDateField(paymentDateChooser, initialData.getPaymentDate());
@@ -204,7 +199,7 @@ public class PaymentFormDialog extends JDialog {
         Object statusObj = statusCombo.getSelectedItem();
         String statusText = statusObj == null ? "" : statusObj.toString().trim();
 
-        if (paymentIdField.getText().isBlank() || residentIdField.getText().isBlank()
+        if (residentIdField.getText().isBlank()
                 || amountField.getText().isBlank() || paymentDateChooser.getDate() == null
                 || statusText.isBlank()) {
             StyledMessageDialog.showWarning(this, "Payment", "Fill in all payment fields.");
@@ -214,7 +209,7 @@ public class PaymentFormDialog extends JDialog {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         formData = new PaymentFormData(
-                paymentIdField.getText().trim(),
+                hiddenPaymentId,
                 residentIdField.getText().trim(),
                 amountField.getText().trim(),
                 formatter.format(paymentDateChooser.getDate()),

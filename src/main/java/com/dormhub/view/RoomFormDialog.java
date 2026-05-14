@@ -28,7 +28,7 @@ public class RoomFormDialog extends JDialog {
     private static final int CONTENT_HEIGHT = 582;
 
     private final JTextField roomNoField = createTextField();
-    private final JTextField roomTypeField = createTextField();
+    private final javax.swing.JComboBox<String> roomTypeCombo = createRoomTypeCombo();
     private final JTextField capacityField = createTextField();
     private final JTextField currentOccupancyField = createTextField();
     private final JLabel titleLabel = new JLabel();
@@ -52,7 +52,7 @@ public class RoomFormDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         addField(formPanel, gbc, 0, "Room Number:", roomNoField);
-        addField(formPanel, gbc, 1, "Room Type:", roomTypeField);
+        addField(formPanel, gbc, 1, "Room Type:", roomTypeCombo);
         addField(formPanel, gbc, 2, "Capacity:", capacityField);
         addField(formPanel, gbc, 3, "Current Occupancy:", currentOccupancyField);
 
@@ -109,12 +109,12 @@ public class RoomFormDialog extends JDialog {
 
     private void populateFields(RoomFormData initialData) {
         roomNoField.setText(initialData.getRoomNo());
-        roomTypeField.setText(initialData.getRoomType());
+        roomTypeCombo.setSelectedItem(initialData.getRoomType());
         capacityField.setText(initialData.getCapacity());
         currentOccupancyField.setText(initialData.getCurrentOccupancy());
     }
 
-    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JTextField field) {
+    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, java.awt.Component field) {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
@@ -127,6 +127,16 @@ public class RoomFormDialog extends JDialog {
         gbc.gridx = 1;
         gbc.weightx = 1;
         panel.add(field, gbc);
+    }
+
+    private javax.swing.JComboBox<String> createRoomTypeCombo() {
+        javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(
+                new String[] { "Regular", "Transient" });
+        combo.setFont(new Font("Arial", Font.PLAIN, 20));
+        combo.setOpaque(false);
+        combo.setBackground(new Color(255, 255, 255, 200));
+        combo.setPreferredSize(new java.awt.Dimension(25, 38));
+        return combo;
     }
 
     private JTextField createTextField() {
@@ -153,7 +163,7 @@ public class RoomFormDialog extends JDialog {
     }
 
     private void onSave() {
-        if (roomNoField.getText().isBlank() || roomTypeField.getText().isBlank()
+        if (roomNoField.getText().isBlank()
                 || capacityField.getText().isBlank() || currentOccupancyField.getText().isBlank()) {
             StyledMessageDialog.showWarning(this, "Room", "Fill in all room fields.");
             return;
@@ -161,7 +171,7 @@ public class RoomFormDialog extends JDialog {
 
         formData = new RoomFormData(
                 roomNoField.getText().trim(),
-                roomTypeField.getText().trim(),
+                (String) roomTypeCombo.getSelectedItem(),
                 capacityField.getText().trim(),
                 currentOccupancyField.getText().trim());
         dispose();

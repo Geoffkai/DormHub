@@ -233,22 +233,14 @@ public class GUIController {
                 "Assignment Updated",
                 "Assignment updated successfully.");
 
-        configureDeleteAction(
-                contentPanel::getSelectedAssignment,
-                "Delete Assignment",
-                "Select an assignment to delete.",
-                "Delete Assignment",
-                selectedAssignment -> "Delete assignment " + selectedAssignment.getAssignmentId() + "?",
-                selectedAssignment -> roomAssignmentService.deleteRoomAssignment(selectedAssignment.getAssignmentId()),
-                this::loadAssignments,
-                "Assignment Deleted",
-                "Assignment deleted successfully.");
+        contentPanel.setDeleteAction(e ->
+                contentPanel.showWarningMessage("Delete Assignment",
+                        "Assignments cannot be deleted.\nTo move a resident out, update\nthe assignment and set a Date Vacated."));
 
         loadAssignments();
     }
 
     private void saveAssignment(AssignmentFormData formData, boolean update) {
-        int assignmentId = parseIntField(formData.getAssignmentId(), "Assignment ID");
         int residentId = parseIntField(formData.getResidentId(), "Resident ID");
         int roomId = parseIntField(formData.getRoomId(), "Room ID");
         Date dateAssigned = parseDateField(formData.getDateAssigned(), "Date assigned");
@@ -259,11 +251,12 @@ public class GUIController {
         }
 
         if (update) {
+            int assignmentId = parseIntField(formData.getAssignmentId(), "Assignment ID");
             roomAssignmentService.updateRoomAssignment(assignmentId, residentId, roomId, dateAssigned, dateVacated);
             return;
         }
 
-        roomAssignmentService.addRoomAssignment(assignmentId, residentId, roomId, dateAssigned, dateVacated);
+        roomAssignmentService.addRoomAssignment(residentId, roomId, dateAssigned, dateVacated);
     }
 
     public void bindPaymentActions() {
@@ -312,27 +305,17 @@ public class GUIController {
     }
 
     private void savePayment(PaymentFormData formData, boolean update) {
-        int paymentId = parseIntField(formData.getPaymentId(), "Payment ID");
         int residentId = parseIntField(formData.getResidentId(), "Resident ID");
         double amount = parseDoubleField(formData.getAmount(), "Amount");
         Date paymentDate = parseDateField(formData.getPaymentDate(), "Payment date");
 
         if (update) {
-            paymentService.updatePayment(
-                    paymentId,
-                    residentId,
-                    amount,
-                    paymentDate,
-                    formData.getStatus());
+            int paymentId = parseIntField(formData.getPaymentId(), "Payment ID");
+            paymentService.updatePayment(paymentId, residentId, amount, paymentDate, formData.getStatus());
             return;
         }
 
-        paymentService.addPayment(
-                paymentId,
-                residentId,
-                amount,
-                paymentDate,
-                formData.getStatus());
+        paymentService.addPayment(residentId, amount, paymentDate, formData.getStatus());
     }
 
     public void bindDormPassActions() {
@@ -383,30 +366,18 @@ public class GUIController {
     }
 
     private void saveDormPass(DormPassFormData formData, boolean update) {
-        int passId = parseIntField(formData.getPassId(), "Pass ID");
         int residentId = parseIntField(formData.getResidentId(), "Resident ID");
         Date dateApplied = parseDateField(formData.getDateApplied(), "Date applied");
 
         if (update) {
-            dormPassService.updateDormPass(
-                    passId,
-                    residentId,
-                    formData.getType(),
-                    formData.getReason(),
-                    formData.getDestination(),
-                    dateApplied,
-                    formData.getStatus());
+            int passId = parseIntField(formData.getPassId(), "Pass ID");
+            dormPassService.updateDormPass(passId, residentId, formData.getType(), formData.getReason(),
+                    formData.getDestination(), dateApplied, formData.getStatus());
             return;
         }
 
-        dormPassService.addDormPass(
-                passId,
-                residentId,
-                formData.getType(),
-                formData.getReason(),
-                formData.getDestination(),
-                dateApplied,
-                formData.getStatus());
+        dormPassService.addDormPass(residentId, formData.getType(), formData.getReason(),
+                formData.getDestination(), dateApplied, formData.getStatus());
     }
 
     public void bindDashboardActions() {

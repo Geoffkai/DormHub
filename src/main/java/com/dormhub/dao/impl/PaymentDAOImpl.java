@@ -15,15 +15,14 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public void insert(Payment payment) {
-        String sql = "INSERT INTO payment (payment_id, resident_id, amount, payment_date, status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO payment (resident_id, amount, payment_date, status) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, payment.getPaymentId());
-            ps.setInt(2, payment.getResidentId());
-            ps.setDouble(3, payment.getAmount());
-            ps.setDate(4, payment.getPaymentDate());
-            ps.setString(5, payment.getStatus());
+            ps.setInt(1, payment.getResidentId());
+            ps.setDouble(2, payment.getAmount());
+            ps.setDate(3, payment.getPaymentDate());
+            ps.setString(4, payment.getStatus());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {

@@ -14,15 +14,15 @@ import com.dormhub.util.DBUtil;
 public class RoomAssignmentDAOImpl implements RoomAssignmentDAO {
     @Override
     public void insert(RoomAssignment roomAssignment) {
-        String sql = "INSERT INTO room_assignments (assignment_id, resident_id, room_id, date_assigned, date_vacated) VALUES (?, ?, ?, ?, ?)";
+        // Let the database auto-generate assignment_id (AUTO_INCREMENT)
+        String sql = "INSERT INTO room_assignments (resident_id, room_id, date_assigned, date_vacated) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, roomAssignment.getAssignmentId());
-            ps.setInt(2, roomAssignment.getResidentId());
-            ps.setInt(3, roomAssignment.getRoomId());
-            ps.setDate(4, roomAssignment.getDateAssigned());
-            ps.setDate(5, roomAssignment.getDateVacated());
+            ps.setInt(1, roomAssignment.getResidentId());
+            ps.setInt(2, roomAssignment.getRoomId());
+            ps.setDate(3, roomAssignment.getDateAssigned());
+            ps.setDate(4, roomAssignment.getDateVacated());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {

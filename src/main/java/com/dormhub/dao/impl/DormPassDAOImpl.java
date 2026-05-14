@@ -14,17 +14,16 @@ import com.dormhub.util.DBUtil;
 public class DormPassDAOImpl implements DormPassDAO {
     @Override
     public void insert(DormPass dormPass) {
-        String sql = "INSERT INTO dorm_pass (pass_id, resident_id, type, reason, destination, date_applied, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO dorm_pass (resident_id, type, reason, destination, date_applied, status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, dormPass.getPassId());
-            ps.setInt(2, dormPass.getResidentId());
-            ps.setString(3, dormPass.getType());
-            ps.setString(4, dormPass.getReason());
-            ps.setString(5, dormPass.getDestination());
-            ps.setDate(6, dormPass.getDateApplied());
-            ps.setString(7, dormPass.getStatus());
+            ps.setInt(1, dormPass.getResidentId());
+            ps.setString(2, dormPass.getType());
+            ps.setString(3, dormPass.getReason());
+            ps.setString(4, dormPass.getDestination());
+            ps.setDate(5, dormPass.getDateApplied());
+            ps.setString(6, dormPass.getStatus());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {

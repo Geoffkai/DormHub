@@ -32,7 +32,7 @@ public class AssignmentFormDialog extends JDialog {
     private static final int CONTENT_WIDTH = 720;
     private static final int CONTENT_HEIGHT = 582;
 
-    private final JTextField assignmentIdField = createTextField();
+    private String hiddenAssignmentId = "";
     private final JTextField residentIdField = createTextField();
     private final JTextField roomIdField = createTextField();
     private final JDateChooser dateAssignedChooser = createDateChooser();
@@ -57,11 +57,10 @@ public class AssignmentFormDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        addField(formPanel, gbc, 0, "Assignment ID:", assignmentIdField);
-        addField(formPanel, gbc, 1, "Resident ID:", residentIdField);
-        addField(formPanel, gbc, 2, "Room ID:", roomIdField);
-        addField(formPanel, gbc, 3, "Date Assigned:", dateAssignedChooser);
-        addField(formPanel, gbc, 4, "Date Vacated:", dateVacatedChooser);
+        addField(formPanel, gbc, 0, "Resident ID:", residentIdField);
+        addField(formPanel, gbc, 1, "Room ID:", roomIdField);
+        addField(formPanel, gbc, 2, "Date Assigned:", dateAssignedChooser);
+        addField(formPanel, gbc, 3, "Date Vacated:", dateVacatedChooser);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
         actionsPanel.setOpaque(false);
@@ -98,8 +97,6 @@ public class AssignmentFormDialog extends JDialog {
     public static AssignmentFormData showAddDialog(Component parent) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         AssignmentFormDialog dialog = new AssignmentFormDialog(owner, "Add Assignment");
-        dialog.assignmentIdField.setEditable(true);
-        dialog.assignmentIdField.setEnabled(true);
         dialog.setVisible(true);
         return dialog.formData;
     }
@@ -108,14 +105,12 @@ public class AssignmentFormDialog extends JDialog {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         AssignmentFormDialog dialog = new AssignmentFormDialog(owner, "Update Assignment");
         dialog.populateFields(initialData);
-        dialog.assignmentIdField.setEditable(false);
-        dialog.assignmentIdField.setEnabled(false);
         dialog.setVisible(true);
         return dialog.formData;
     }
 
     private void populateFields(AssignmentFormData initialData) {
-        assignmentIdField.setText(initialData.getAssignmentId());
+        hiddenAssignmentId = initialData.getAssignmentId();
         residentIdField.setText(initialData.getResidentId());
         roomIdField.setText(initialData.getRoomId());
         setDateField(dateAssignedChooser, initialData.getDateAssigned());
@@ -191,7 +186,7 @@ public class AssignmentFormDialog extends JDialog {
     }
 
     private void onSave() {
-        if (assignmentIdField.getText().isBlank() || residentIdField.getText().isBlank()
+        if (residentIdField.getText().isBlank()
                 || roomIdField.getText().isBlank() || dateAssignedChooser.getDate() == null) {
             StyledMessageDialog.showWarning(this, "Assignment", "Fill in all required assignment fields.");
             return;
@@ -202,7 +197,7 @@ public class AssignmentFormDialog extends JDialog {
         String dateVacated = dateVacatedChooser.getDate() == null ? "" : formatter.format(dateVacatedChooser.getDate());
 
         formData = new AssignmentFormData(
-                assignmentIdField.getText().trim(),
+                hiddenAssignmentId,
                 residentIdField.getText().trim(),
                 roomIdField.getText().trim(),
                 dateAssigned,

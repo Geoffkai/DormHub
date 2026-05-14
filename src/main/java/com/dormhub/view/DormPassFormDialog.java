@@ -33,9 +33,9 @@ public class DormPassFormDialog extends JDialog {
     private static final int CONTENT_WIDTH = 720;
     private static final int CONTENT_HEIGHT = 582;
 
-    private final JTextField passIdField = createTextField();
+    private String hiddenPassId = "";
     private final JTextField residentIdField = createTextField();
-    private final JTextField typeField = createTextField();
+    private final javax.swing.JComboBox<String> typeCombo = createTypeCombo();
     private final JTextField reasonField = createTextField();
     private final JTextField destinationField = createTextField();
     private final JDateChooser dateAppliedChooser = createDateChooser();
@@ -60,13 +60,12 @@ public class DormPassFormDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        addField(formPanel, gbc, 0, "Pass ID:", passIdField);
-        addField(formPanel, gbc, 1, "Resident ID:", residentIdField);
-        addField(formPanel, gbc, 2, "Type:", typeField);
-        addField(formPanel, gbc, 3, "Reason:", reasonField);
-        addField(formPanel, gbc, 4, "Destination:", destinationField);
-        addField(formPanel, gbc, 5, "Date Applied:", dateAppliedChooser);
-        addField(formPanel, gbc, 6, "Status:", statusCombo);
+        addField(formPanel, gbc, 0, "Resident ID:", residentIdField);
+        addField(formPanel, gbc, 1, "Type:", typeCombo);
+        addField(formPanel, gbc, 2, "Reason:", reasonField);
+        addField(formPanel, gbc, 3, "Destination:", destinationField);
+        addField(formPanel, gbc, 4, "Date Applied:", dateAppliedChooser);
+        addField(formPanel, gbc, 5, "Status:", statusCombo);
 
         JPanel actionsPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 28, 0));
         actionsPanel.setOpaque(false);
@@ -103,8 +102,6 @@ public class DormPassFormDialog extends JDialog {
     public static DormPassFormData showAddDialog(Component parent) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         DormPassFormDialog dialog = new DormPassFormDialog(owner, "Add Dorm Pass");
-        dialog.passIdField.setEditable(true);
-        dialog.passIdField.setEnabled(true);
         dialog.setVisible(true);
         return dialog.formData;
     }
@@ -113,16 +110,14 @@ public class DormPassFormDialog extends JDialog {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         DormPassFormDialog dialog = new DormPassFormDialog(owner, "Update Dorm Pass");
         dialog.populateFields(initialData);
-        dialog.passIdField.setEditable(false);
-        dialog.passIdField.setEnabled(false);
         dialog.setVisible(true);
         return dialog.formData;
     }
 
     private void populateFields(DormPassFormData initialData) {
-        passIdField.setText(initialData.getPassId());
+        hiddenPassId = initialData.getPassId();
         residentIdField.setText(initialData.getResidentId());
-        typeField.setText(initialData.getType());
+        typeCombo.setSelectedItem(initialData.getType());
         reasonField.setText(initialData.getReason());
         destinationField.setText(initialData.getDestination());
         setDateField(dateAppliedChooser, initialData.getDateApplied());
@@ -187,6 +182,16 @@ public class DormPassFormDialog extends JDialog {
         return field;
     }
 
+    private javax.swing.JComboBox<String> createTypeCombo() {
+        javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(
+                new String[] { "Day", "Overnight" });
+        combo.setFont(new Font("Arial", Font.PLAIN, 20));
+        combo.setOpaque(false);
+        combo.setBackground(new Color(255, 255, 255, 200));
+        combo.setPreferredSize(new java.awt.Dimension(25, 38));
+        return combo;
+    }
+
     private javax.swing.JComboBox<String> createStatusCombo() {
         javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(
                 new String[] { "Pending", "Approved", "Denied" });
@@ -212,8 +217,9 @@ public class DormPassFormDialog extends JDialog {
         Object statusObj = statusCombo.getSelectedItem();
         String statusText = statusObj == null ? "" : statusObj.toString().trim();
 
-        if (passIdField.getText().isBlank() || residentIdField.getText().isBlank()
-                || typeField.getText().isBlank() || reasonField.getText().isBlank()
+        String typeText = typeCombo.getSelectedItem() == null ? "" : typeCombo.getSelectedItem().toString();
+        if (residentIdField.getText().isBlank()
+                || reasonField.getText().isBlank()
                 || destinationField.getText().isBlank() || dateAppliedChooser.getDate() == null
                 || statusText.isBlank()) {
             JOptionPane.showMessageDialog(this, "Fill in all dorm pass fields.");
@@ -223,9 +229,9 @@ public class DormPassFormDialog extends JDialog {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         formData = new DormPassFormData(
-                passIdField.getText().trim(),
+                hiddenPassId,
                 residentIdField.getText().trim(),
-                typeField.getText().trim(),
+                typeText,
                 reasonField.getText().trim(),
                 destinationField.getText().trim(),
                 formatter.format(dateAppliedChooser.getDate()),

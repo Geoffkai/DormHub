@@ -6,7 +6,7 @@ import java.util.List;
 import com.dormhub.model.RoomAssignment;
 
 public interface RoomAssignmentService {
-    void addRoomAssignment(int assignmentId, int residentId, int roomId, Date dateAssigned, Date dateVacated);
+    void addRoomAssignment(int residentId, int roomId, Date dateAssigned, Date dateVacated);
 
     void updateRoomAssignment(int assignmentId, int residentId, int roomId, Date dateAssigned, Date dateVacated);
 
