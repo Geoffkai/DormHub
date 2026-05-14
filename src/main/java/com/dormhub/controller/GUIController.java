@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -209,7 +210,7 @@ public class GUIController {
         contentPanel.setExportAction(e -> exportAssignments());
 
         configureAddAction(
-            () -> AssignmentFormDialog.showAddDialog(contentPanel),
+            () -> AssignmentFormDialog.showAddDialog(contentPanel, residentService.findAllResidents()),
                 formData -> saveAssignment(formData, false),
                 this::loadAssignments,
                 "Assignment Added",
@@ -227,7 +228,8 @@ public class GUIController {
                                 String.valueOf(selectedAssignment.getRoomId()),
                                 selectedAssignment.getDateAssigned().toString(),
                                 selectedAssignment.getDateVacated() == null ? ""
-                                        : selectedAssignment.getDateVacated().toString())),
+                                        : selectedAssignment.getDateVacated().toString()),
+                        residentService.findAllResidents()),
                 formData -> saveAssignment(formData, true),
                 this::loadAssignments,
                 "Assignment Updated",
@@ -267,7 +269,7 @@ public class GUIController {
         contentPanel.setExportAction(e -> exportPayments());
 
         configureAddAction(
-            () -> PaymentFormDialog.showAddDialog(contentPanel),
+            () -> PaymentFormDialog.showAddDialog(contentPanel, residentService.findAllResidents()),
                 formData -> savePayment(formData, false),
                 this::loadPayments,
                 "Payment Added",
@@ -284,7 +286,8 @@ public class GUIController {
                                 String.valueOf(selectedPayment.getResidentId()),
                                 String.valueOf(selectedPayment.getAmount()),
                                 selectedPayment.getPaymentDate().toString(),
-                                selectedPayment.getStatus())),
+                                selectedPayment.getStatus()),
+                        residentService.findAllResidents()),
                 formData -> savePayment(formData, true),
                 this::loadPayments,
                 "Payment Updated",
@@ -326,7 +329,7 @@ public class GUIController {
         contentPanel.setExportAction(e -> exportDormPasses());
 
         configureAddAction(
-            () -> DormPassFormDialog.showAddDialog(contentPanel),
+            () -> DormPassFormDialog.showAddDialog(contentPanel, residentService.findAllResidents()),
                 formData -> saveDormPass(formData, false),
                 this::loadDormPasses,
                 "Dorm Pass Added",
@@ -345,7 +348,8 @@ public class GUIController {
                                 selectedDormPass.getReason(),
                                 selectedDormPass.getDestination(),
                                 selectedDormPass.getDateApplied().toString(),
-                                selectedDormPass.getStatus())),
+                                selectedDormPass.getStatus()),
+                        residentService.findAllResidents()),
                 formData -> saveDormPass(formData, true),
                 this::loadDormPasses,
                 "Dorm Pass Updated",
@@ -394,9 +398,14 @@ public class GUIController {
         }
     }
 
+    private String datedFilename(String base) {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        return base + "_" + today + ".csv";
+    }
+
     private void exportResidents() {
         exportToCsv(
-                "residents.csv",
+                datedFilename("residents"),
                 new String[] { "Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program",
                         "Move-in-date" },
                 residentService::findAllResidents,
@@ -413,7 +422,7 @@ public class GUIController {
 
     private void exportRooms() {
         exportToCsv(
-                "rooms.csv",
+                datedFilename("rooms"),
                 new String[] { "Room Number", "Room Type", "Capacity", "Current Occupancy" },
                 roomService::findAllRooms,
                 room -> new Object[] {
@@ -426,7 +435,7 @@ public class GUIController {
 
     private void exportAssignments() {
         exportToCsv(
-                "assignments.csv",
+                datedFilename("assignments"),
                 new String[] { "Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated" },
                 roomAssignmentService::findAllAssignments,
                 assignment -> new Object[] {
@@ -440,7 +449,7 @@ public class GUIController {
 
     private void exportPayments() {
         exportToCsv(
-                "payments.csv",
+                datedFilename("payments"),
                 new String[] { "Payment ID", "Resident ID", "Amount", "Payment Date", "Status" },
                 paymentService::findAllPayments,
                 payment -> new Object[] {
@@ -454,7 +463,7 @@ public class GUIController {
 
     private void exportDormPasses() {
         exportToCsv(
-                "dorm_passes.csv",
+                datedFilename("dorm_passes"),
                 new String[] { "Pass ID", "Resident ID", "Type", "Reason", "Destination", "Date Applied", "Status" },
                 dormPassService::findAllDormPasses,
                 dormPass -> new Object[] {

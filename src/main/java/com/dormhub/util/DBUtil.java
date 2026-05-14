@@ -2,6 +2,7 @@ package com.dormhub.util;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -34,6 +35,8 @@ public final class DBUtil {
 
             try {
                 if (hasCoreTables(connection)) {
+                    migrateLegacyRoomTypes(connection);
+                    migrateLegacyDormPassTypes(connection);
                     schemaInitialized = true;
                     return;
                 }
@@ -50,7 +53,77 @@ public final class DBUtil {
                 }
             }
 
+            migrateLegacyRoomTypes(connection);
+            migrateLegacyDormPassTypes(connection);
+
             schemaInitialized = true;
+        }
+    }
+
+    private static void migrateLegacyDormPassTypes(Connection connection) throws SQLException {
+        if (!tableExists(connection, "dorm_pass")) {
+            return;
+        }
+
+        try (PreparedStatement ps = connection
+                .prepareStatement("UPDATE dorm_pass SET type = 'Home Pass' WHERE LOWER(type) = 'day'")) {
+            ps.executeUpdate();
+        }
+    }
+
+    private static void migrateLegacyRoomTypes(Connection connection) throws SQLException {
+        if (!tableExists(connection, "room")) {
+            return;
+        }
+
+        // Ensure room_type can hold both "Regular" and "Transient".
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("ALTER TABLE room MODIFY COLUMN room_type VARCHAR(9) NOT NULL");
+        }
+
+        dropLegacyRoomTypeChecks(connection);
+
+        try (PreparedStatement updateMale = connection
+                .prepareStatement("UPDATE room SET room_type = 'Regular' WHERE LOWER(room_type) = 'male'")) {
+            updateMale.executeUpdate();
+        }
+
+        try (PreparedStatement updateFemale = connection
+                .prepareStatement("UPDATE room SET room_type = 'Transient' WHERE LOWER(room_type) = 'female'")) {
+            updateFemale.executeUpdate();
+        }
+    }
+
+    private static void dropLegacyRoomTypeChecks(Connection connection) throws SQLException {
+        String sql = """
+                SELECT tc.CONSTRAINT_NAME, cc.CHECK_CLAUSE
+                FROM information_schema.TABLE_CONSTRAINTS tc
+                JOIN information_schema.CHECK_CONSTRAINTS cc
+                  ON tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME
+                 AND tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA
+                WHERE tc.TABLE_SCHEMA = DATABASE()
+                  AND tc.TABLE_NAME = 'room'
+                  AND tc.CONSTRAINT_TYPE = 'CHECK'
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet result = statement.executeQuery()) {
+            while (result.next()) {
+                String constraintName = result.getString("CONSTRAINT_NAME");
+                String checkClause = result.getString("CHECK_CLAUSE");
+                if (constraintName == null || checkClause == null) {
+                    continue;
+                }
+
+                String normalizedClause = checkClause.toLowerCase();
+                if (normalizedClause.contains("room_type")
+                        && normalizedClause.contains("male")
+                        && normalizedClause.contains("female")) {
+                    try (Statement dropStatement = connection.createStatement()) {
+                        dropStatement.execute("ALTER TABLE room DROP CHECK `" + constraintName + "`");
+                    }
+                }
+            }
         }
     }
 

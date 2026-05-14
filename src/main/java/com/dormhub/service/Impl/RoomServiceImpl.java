@@ -60,7 +60,8 @@ public class RoomServiceImpl implements RoomService {
 
         if (!roomAssignmentDAO.findByRoomId(roomNo).isEmpty()) {
             throw new IllegalArgumentException(
-                    "Room " + roomNo + " cannot be deleted: it still has room assignments. Remove all assignments for this room first.");
+                    "Room " + roomNo
+                            + " cannot be deleted: it still has room assignments. Remove all assignments for this room first.");
         }
 
         roomDAO.delete(roomNo);
@@ -113,7 +114,7 @@ public class RoomServiceImpl implements RoomService {
         if (roomType == null || roomType.isBlank()) {
             throw new IllegalArgumentException("Room Type must be valid");
         }
-        // Validate room type is exactly "Male" or "Female" to prevent truncation
+        // Validate room type is exactly "Regular" or "Transient" to match schema.
         String trimmedType = roomType.trim();
         if (!trimmedType.equals("Regular") && !trimmedType.equals("Transient")) {
             throw new IllegalArgumentException("Room Type must be either 'Regular' or 'Transient'");

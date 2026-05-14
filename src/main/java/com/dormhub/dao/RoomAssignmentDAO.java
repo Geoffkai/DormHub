@@ -18,4 +18,6 @@ public interface RoomAssignmentDAO {
     List<RoomAssignment> findByRoomId(int roomId);
 
     List<RoomAssignment> findAllAssignments();
+
+    RoomAssignment findActiveByResidentId(int residentId);
 }

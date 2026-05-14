@@ -165,6 +165,32 @@ public class RoomAssignmentDAOImpl implements RoomAssignmentDAO {
     }
 
     @Override
+    public RoomAssignment findActiveByResidentId(int residentId) {
+        String sql = "SELECT * FROM room_assignments WHERE resident_id = ? AND date_vacated IS NULL LIMIT 1";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, residentId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    RoomAssignment ra = new RoomAssignment();
+                    ra.setAssignmentId(rs.getInt("assignment_id"));
+                    ra.setResidentId(rs.getInt("resident_id"));
+                    ra.setRoomId(rs.getInt("room_id"));
+                    ra.setDateAssigned(rs.getDate("date_assigned"));
+                    ra.setDateVacated(rs.getDate("date_vacated"));
+                    return ra;
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error finding active assignment for resident: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
     public List<RoomAssignment> findAllAssignments() {
         List<RoomAssignment> assignments = new ArrayList<>();
         String sql = "SELECT * FROM room_assignments";

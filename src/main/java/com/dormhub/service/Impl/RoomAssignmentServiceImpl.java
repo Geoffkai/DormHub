@@ -36,6 +36,9 @@ public class RoomAssignmentServiceImpl implements RoomAssignmentService {
         if (residentId <= 0) throw new IllegalArgumentException("Resident ID must be positive");
         if (roomId <= 0)     throw new IllegalArgumentException("Room ID must be positive");
         if (dateAssigned == null) throw new IllegalArgumentException("Date assigned cannot be null");
+        if (dateVacated != null && !dateVacated.after(dateAssigned)) {
+            throw new IllegalArgumentException("Date vacated must be after date assigned.");
+        }
 
         if (residentDAO.findById(residentId) == null) {
             throw new IllegalArgumentException("Resident not found: " + residentId);
@@ -44,6 +47,15 @@ public class RoomAssignmentServiceImpl implements RoomAssignmentService {
         com.dormhub.model.Room room = roomDAO.findByRoomNo(roomId);
         if (room == null) {
             throw new IllegalArgumentException("Room not found: " + roomId);
+        }
+
+        if (dateVacated == null) {
+            RoomAssignment existing = roomAssignmentDAO.findActiveByResidentId(residentId);
+            if (existing != null) {
+                throw new IllegalArgumentException(
+                        "Resident " + residentId + " is already assigned to room " + existing.getRoomId()
+                                + ". A student can only be in one room at a time.");
+            }
         }
 
         if (dateVacated == null && room.getCurrentOccupancy() >= room.getCapacity()) {
@@ -64,6 +76,9 @@ public class RoomAssignmentServiceImpl implements RoomAssignmentService {
     public void updateRoomAssignment(int assignmentId, int residentId, int roomId, Date dateAssigned,
             Date dateVacated) {
         validateRoomAssignmentFields(assignmentId, residentId, roomId, dateAssigned);
+        if (dateVacated != null && !dateVacated.after(dateAssigned)) {
+            throw new IllegalArgumentException("Date vacated must be after date assigned.");
+        }
 
         RoomAssignment oldAssignment = roomAssignmentDAO.findById(assignmentId);
         if (oldAssignment == null) {
@@ -82,6 +97,15 @@ public class RoomAssignmentServiceImpl implements RoomAssignmentService {
         boolean wasActive = oldAssignment.getDateVacated() == null;
         boolean willBeActive = dateVacated == null;
         boolean roomChanged = oldAssignment.getRoomId() != roomId;
+
+        if (willBeActive && (!wasActive || roomChanged)) {
+            RoomAssignment existingActive = roomAssignmentDAO.findActiveByResidentId(residentId);
+            if (existingActive != null && existingActive.getAssignmentId() != assignmentId) {
+                throw new IllegalArgumentException(
+                        "Resident " + residentId + " is already assigned to room " + existingActive.getRoomId()
+                                + ". A student can only be in one room at a time.");
+            }
+        }
 
         if (willBeActive && (!wasActive || roomChanged) && newRoom.getCurrentOccupancy() >= newRoom.getCapacity()) {
             throw new IllegalArgumentException(

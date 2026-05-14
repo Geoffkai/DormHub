@@ -14,6 +14,7 @@ import java.awt.RenderingHints;
 import java.awt.Window;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -25,6 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
+import com.dormhub.model.Resident;
 import com.toedter.calendar.JDateChooser;
 
 public class AssignmentFormDialog extends JDialog {
@@ -33,7 +35,7 @@ public class AssignmentFormDialog extends JDialog {
     private static final int CONTENT_HEIGHT = 582;
 
     private String hiddenAssignmentId = "";
-    private final JTextField residentIdField = createTextField();
+    private final ResidentSearchField residentIdField;
     private final JTextField roomIdField = createTextField();
     private final JDateChooser dateAssignedChooser = createDateChooser();
     private final JDateChooser dateVacatedChooser = createDateChooser();
@@ -41,8 +43,9 @@ public class AssignmentFormDialog extends JDialog {
 
     private AssignmentFormData formData;
 
-    public AssignmentFormDialog(Window owner, String title) {
+    public AssignmentFormDialog(Window owner, String title, List<Resident> residents) {
         super(owner instanceof Frame ? (Frame) owner : null, "", ModalityType.APPLICATION_MODAL);
+        this.residentIdField = new ResidentSearchField(residents, new Color(255, 255, 255, 170));
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 0));
 
@@ -94,16 +97,16 @@ public class AssignmentFormDialog extends JDialog {
         setLocation(720, 340);
     }
 
-    public static AssignmentFormData showAddDialog(Component parent) {
+    public static AssignmentFormData showAddDialog(Component parent, List<Resident> residents) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
-        AssignmentFormDialog dialog = new AssignmentFormDialog(owner, "Add Assignment");
+        AssignmentFormDialog dialog = new AssignmentFormDialog(owner, "Add Assignment", residents);
         dialog.setVisible(true);
         return dialog.formData;
     }
 
-    public static AssignmentFormData showUpdateDialog(Component parent, AssignmentFormData initialData) {
+    public static AssignmentFormData showUpdateDialog(Component parent, AssignmentFormData initialData, List<Resident> residents) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
-        AssignmentFormDialog dialog = new AssignmentFormDialog(owner, "Update Assignment");
+        AssignmentFormDialog dialog = new AssignmentFormDialog(owner, "Update Assignment", residents);
         dialog.populateFields(initialData);
         dialog.setVisible(true);
         return dialog.formData;
