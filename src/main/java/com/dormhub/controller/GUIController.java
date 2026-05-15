@@ -1,13 +1,18 @@
 package com.dormhub.controller;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -75,6 +80,7 @@ public class GUIController {
             contentPanel.clearSearch();
             loadResidents();
         });
+        contentPanel.setImportAction(e -> importResidents());
         contentPanel.setExportAction(e -> exportResidents());
 
         configureAddAction(
@@ -150,6 +156,7 @@ public class GUIController {
             contentPanel.clearSearch();
             loadRooms();
         });
+        contentPanel.setImportAction(e -> importRooms());
         contentPanel.setExportAction(e -> exportRooms());
 
         configureAddAction(
@@ -207,6 +214,7 @@ public class GUIController {
             contentPanel.clearSearch();
             loadAssignments();
         });
+        contentPanel.setImportAction(e -> importAssignments());
         contentPanel.setExportAction(e -> exportAssignments());
 
         configureAddAction(
@@ -266,6 +274,7 @@ public class GUIController {
             contentPanel.clearSearch();
             loadPayments();
         });
+        contentPanel.setImportAction(e -> importPayments());
         contentPanel.setExportAction(e -> exportPayments());
 
         configureAddAction(
@@ -326,6 +335,7 @@ public class GUIController {
             contentPanel.clearSearch();
             loadDormPasses();
         });
+        contentPanel.setImportAction(e -> importDormPasses());
         contentPanel.setExportAction(e -> exportDormPasses());
 
         configureAddAction(
@@ -420,6 +430,23 @@ public class GUIController {
                 });
     }
 
+    private void importResidents() {
+        importFromCsv(
+                "Residents",
+                this::loadResidents,
+                headers -> validateHeaders(headers,
+                        "Resident ID", "First Name", "Last Name", "Contact no.", "Year level", "Program",
+                        "Move-in-date"),
+                row -> residentService.addResident(
+                        parseIntField(requiredValue(row, 0, "Resident ID"), "Resident ID"),
+                        requiredValue(row, 2, "Last Name"),
+                        requiredValue(row, 1, "First Name"),
+                        requiredValue(row, 3, "Contact no."),
+                        parseIntField(requiredValue(row, 4, "Year level"), "Year level"),
+                        requiredValue(row, 5, "Program"),
+                        parseDateField(requiredValue(row, 6, "Move-in-date"), "Move-in-date")));
+    }
+
     private void exportRooms() {
         exportToCsv(
                 datedFilename("rooms"),
@@ -431,6 +458,19 @@ public class GUIController {
                         room.getCapacity(),
                         room.getCurrentOccupancy()
                 });
+    }
+
+    private void importRooms() {
+        importFromCsv(
+                "Rooms",
+                this::loadRooms,
+                headers -> validateHeaders(headers,
+                        "Room Number", "Room Type", "Capacity", "Current Occupancy"),
+                row -> roomService.addRoom(
+                        parseIntField(requiredValue(row, 0, "Room Number"), "Room Number"),
+                        requiredValue(row, 1, "Room Type"),
+                        parseIntField(requiredValue(row, 2, "Capacity"), "Capacity"),
+                        parseIntField(requiredValue(row, 3, "Current Occupancy"), "Current Occupancy")));
     }
 
     private void exportAssignments() {
@@ -447,6 +487,24 @@ public class GUIController {
                 });
     }
 
+    private void importAssignments() {
+        importFromCsv(
+                "Assignments",
+                this::loadAssignments,
+                headers -> {
+                    validateHeaders(headers,
+                            "Assignment ID", "Resident ID", "Room ID", "Date Assigned", "Date Vacated");
+                    if (headers.size() < 5) {
+                        throw new IllegalArgumentException("Assignments CSV must contain 5 columns.");
+                    }
+                },
+                row -> roomAssignmentService.addRoomAssignment(
+                        parseIntField(requiredValue(row, 1, "Resident ID"), "Resident ID"),
+                        parseIntField(requiredValue(row, 2, "Room ID"), "Room ID"),
+                        parseDateField(requiredValue(row, 3, "Date Assigned"), "Date Assigned"),
+                        parseOptionalDateField(optionalValue(row, 4), "Date Vacated")));
+    }
+
     private void exportPayments() {
         exportToCsv(
                 datedFilename("payments"),
@@ -459,6 +517,24 @@ public class GUIController {
                         payment.getPaymentDate(),
                         payment.getStatus()
                 });
+    }
+
+    private void importPayments() {
+        importFromCsv(
+                "Payments",
+                this::loadPayments,
+                headers -> {
+                    validateHeaders(headers,
+                            "Payment ID", "Resident ID", "Amount", "Payment Date", "Status");
+                    if (headers.size() < 5) {
+                        throw new IllegalArgumentException("Payments CSV must contain 5 columns.");
+                    }
+                },
+                row -> paymentService.addPayment(
+                        parseIntField(requiredValue(row, 1, "Resident ID"), "Resident ID"),
+                        parseDoubleField(requiredValue(row, 2, "Amount"), "Amount"),
+                        parseDateField(requiredValue(row, 3, "Payment Date"), "Payment Date"),
+                        requiredValue(row, 4, "Status")));
     }
 
     private void exportDormPasses() {
@@ -475,6 +551,26 @@ public class GUIController {
                         dormPass.getDateApplied(),
                         dormPass.getStatus()
                 });
+    }
+
+    private void importDormPasses() {
+        importFromCsv(
+                "Dorm Passes",
+                this::loadDormPasses,
+                headers -> {
+                    validateHeaders(headers,
+                            "Pass ID", "Resident ID", "Type", "Reason", "Destination", "Date Applied", "Status");
+                    if (headers.size() < 7) {
+                        throw new IllegalArgumentException("Dorm passes CSV must contain 7 columns.");
+                    }
+                },
+                row -> dormPassService.addDormPass(
+                        parseIntField(requiredValue(row, 1, "Resident ID"), "Resident ID"),
+                        requiredValue(row, 2, "Type"),
+                        requiredValue(row, 3, "Reason"),
+                        requiredValue(row, 4, "Destination"),
+                        parseDateField(requiredValue(row, 5, "Date Applied"), "Date Applied"),
+                        requiredValue(row, 6, "Status")));
     }
 
     private void loadResidents() {
@@ -523,6 +619,13 @@ public class GUIController {
         } catch (DateTimeParseException ex) {
             throw new IllegalArgumentException(fieldName + " must use YYYY-MM-DD format.");
         }
+    }
+
+    private Date parseOptionalDateField(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return parseDateField(value, fieldName);
     }
 
     private <F> void configureAddAction(
@@ -626,6 +729,7 @@ public class GUIController {
             Supplier<List<T>> dataSupplier, Function<T, Object[]> rowMapper) {
         File selectedFile = chooseCsvSaveFile(defaultFileName);
         if (selectedFile == null) {
+            contentPanel.showWarningMessage("Export Cancelled", "No file was selected.\nNothing was exported.");
             return;
         }
 
@@ -662,6 +766,153 @@ public class GUIController {
         }
 
         return ensureCsvExtension(fileChooser.getSelectedFile());
+    }
+
+    private void importFromCsv(String entityLabel, Runnable reloadAction,
+            Consumer<List<String>> headerValidator, Consumer<List<String>> rowImporter) {
+        File selectedFile = chooseCsvOpenFile(entityLabel);
+        if (selectedFile == null) {
+            contentPanel.showWarningMessage("Import Cancelled", "No file was selected.\nNothing was imported.");
+            return;
+        }
+
+        try {
+            int importedCount = readCsvAndImport(selectedFile, headerValidator, rowImporter);
+            reloadAction.run();
+            bindDashboardActions();
+            contentPanel.showSuccessMessage("Import Complete",
+                    formatImportSuccessMessage(entityLabel, selectedFile, importedCount));
+        } catch (Exception ex) {
+            contentPanel.showErrorMessage("Import Failed", "Failed to import CSV: " + ex.getMessage());
+        }
+    }
+
+    private File chooseCsvOpenFile(String entityLabel) {
+        PositionedFileChooser fileChooser = new PositionedFileChooser();
+        fileChooser.setDialogTitle("Import " + entityLabel + " CSV");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
+        fileChooser.setPreferredSize(new java.awt.Dimension(760, 520));
+
+        final boolean[] approved = { false };
+        final JDialog dialog = fileChooser.buildDialog(contentPanel);
+        fileChooser.addActionListener(e -> {
+            approved[0] = JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand());
+            dialog.dispose();
+        });
+
+        dialog.setModal(true);
+        dialog.pack();
+        dialog.setResizable(false);
+        dialog.setLocation(720, 400);
+        dialog.setVisible(true);
+
+        if (!approved[0]) {
+            return null;
+        }
+
+        return fileChooser.getSelectedFile();
+    }
+
+    private int readCsvAndImport(File file, Consumer<List<String>> headerValidator,
+            Consumer<List<String>> rowImporter) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String headerLine = reader.readLine();
+            if (headerLine == null || headerLine.isBlank()) {
+                throw new IllegalArgumentException("CSV file is empty.");
+            }
+
+            List<String> headers = parseCsvLine(headerLine);
+            headerValidator.accept(headers);
+
+            int importedCount = 0;
+            String line;
+            int lineNumber = 1;
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                List<String> row = parseCsvLine(line);
+                try {
+                    rowImporter.accept(row);
+                    importedCount++;
+                } catch (Exception ex) {
+                    throw new IllegalArgumentException("Row " + lineNumber + ": " + ex.getMessage(), ex);
+                }
+            }
+
+            if (importedCount == 0) {
+                throw new IllegalArgumentException("CSV file does not contain any data rows.");
+            }
+
+            return importedCount;
+        }
+    }
+
+    private void validateHeaders(List<String> actualHeaders, String... expectedHeaders) {
+        if (actualHeaders.size() != expectedHeaders.length) {
+            throw new IllegalArgumentException(
+                    "Unexpected CSV header. Expected: " + String.join(", ", expectedHeaders));
+        }
+
+        for (int i = 0; i < expectedHeaders.length; i++) {
+            String actual = normalizeHeader(actualHeaders.get(i));
+            String expected = normalizeHeader(expectedHeaders[i]);
+            if (!expected.equals(actual)) {
+                throw new IllegalArgumentException(
+                        "Unexpected CSV header. Expected: " + String.join(", ", expectedHeaders));
+            }
+        }
+    }
+
+    private String requiredValue(List<String> row, int index, String fieldName) {
+        if (index >= row.size()) {
+            throw new IllegalArgumentException(fieldName + " is missing.");
+        }
+
+        String value = row.get(index).trim();
+        if (value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        return value;
+    }
+
+    private String optionalValue(List<String> row, int index) {
+        if (index >= row.size()) {
+            return "";
+        }
+        return row.get(index).trim();
+    }
+
+    private List<String> parseCsvLine(String line) {
+        List<String> values = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char ch = line.charAt(i);
+            if (ch == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    current.append('"');
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch == ',' && !inQuotes) {
+                values.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(ch);
+            }
+        }
+
+        values.add(current.toString());
+        return values;
+    }
+
+    private String normalizeHeader(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
     private File ensureCsvExtension(File file) {
@@ -712,6 +963,11 @@ public class GUIController {
 
     private String formatExportSuccessMessage(File file) {
         return "CSV exported successfully!\n File Name: " + file.getName();
+    }
+
+    private String formatImportSuccessMessage(String entityLabel, File file, int importedCount) {
+        return entityLabel + " imported successfully!\nFile Name: " + file.getName()
+                + "\nRecords Imported: " + importedCount;
     }
 
     private static class PositionedFileChooser extends JFileChooser {

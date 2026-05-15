@@ -21,7 +21,7 @@ import com.dormhub.model.RoomAssignment;
 
 public class ContentPanel extends JPanel {
 
-    JButton ViewBtn, AddBtn, UpdateBtn, DeleteBtn, ExportBtn;
+    JButton ViewBtn, AddBtn, UpdateBtn, DeleteBtn, ImportBtn, ExportBtn;
     JButton searchBtn;
 
     // Dashboard panels
@@ -73,11 +73,12 @@ public class ContentPanel extends JPanel {
         setOpaque(false);
 
         // Action buttons
-        ViewBtn   = makeButton("/img/View all.png", (int) 375.1,  (int) 120.1, 238, 60);
-        AddBtn    = makeButton("/img/Add.png",       (int) 688.3,  (int) 120.1, 238, 60);
-        UpdateBtn = makeButton("/img/Update.png",    (int) 1001.3, (int) 120.1, 238, 60);
-        DeleteBtn = makeButton("/img/Delete.png",    (int) 1314.1, (int) 120.1, 238, 60);
-        ExportBtn = makeButton("/img/Export.png",    (int) 1626.8, (int) 120.1, 238, 60);
+        ViewBtn   = makeButton("/img/View all.png", (int) 368,  (int) 130.7, (int) 216.5, 60);
+        AddBtn    = makeButton("/img/Add.png",       (int) 625.7,  (int) 130.7, (int) 216.5, 60);
+        UpdateBtn = makeButton("/img/Update.png",    (int) 883.3, (int) 130.7, (int) 216.5, 60);
+        DeleteBtn = makeButton("/img/Delete.png",    (int) 1140.8, (int) 130.7, (int) 216.5, 60);
+        ImportBtn = makeButton("/img/Import.png",    (int) 1398.4, (int) 130.7, (int) 216.5, 60);
+        ExportBtn = makeButton("/img/Export.png",    (int) 1655.9, (int) 130.7, (int) 216.5, 60);
 
         // Search bar
         searchField = new JTextField(23);
@@ -176,7 +177,7 @@ public class ContentPanel extends JPanel {
         RA.setLayout(new BorderLayout());
         RA.setBorder(new EmptyBorder(4, 8, 4, 8));
 
-        RO.setBounds((int) 412.5, 640, 598, 368);
+        RO.setBounds((int) 412.5, 640, 598, 260);
         RO.setOpaque(true);
         RO.setBackground(Color.WHITE);
         RO.setLayout(new BorderLayout());
@@ -191,6 +192,7 @@ public class ContentPanel extends JPanel {
         add(AddBtn);
         add(UpdateBtn);
         add(DeleteBtn);
+        add(ImportBtn);
         add(ExportBtn);
         add(exitButton);
 
@@ -744,6 +746,7 @@ public class ContentPanel extends JPanel {
         UpdateBtn.setVisible(false);
         DeleteBtn.setVisible(false);
         ExportBtn.setVisible(false);
+        ImportBtn.setVisible(false);
         searchPanel.setVisible(false);
         table.setVisible(false);
         scrollPane.setVisible(false);
@@ -781,6 +784,7 @@ public class ContentPanel extends JPanel {
         UpdateBtn.setVisible(true);
         DeleteBtn.setVisible(true);
         ExportBtn.setVisible(true);
+        ImportBtn.setVisible(true);
         searchPanel.setVisible(true);
         table.setVisible(true);
         scrollPane.setVisible(true);
@@ -799,6 +803,7 @@ public class ContentPanel extends JPanel {
         resetActionListeners(AddBtn);
         resetActionListeners(UpdateBtn);
         resetActionListeners(DeleteBtn);
+        resetActionListeners(ImportBtn);
         resetActionListeners(ExportBtn);
         resetActionListeners(searchBtn);
 
@@ -806,6 +811,7 @@ public class ContentPanel extends JPanel {
         AddBtn.addActionListener(e    -> System.out.println("Add " + label + " clicked"));
         UpdateBtn.addActionListener(e -> System.out.println("Update " + label + " clicked"));
         DeleteBtn.addActionListener(e -> System.out.println("Delete " + label + " clicked"));
+        ImportBtn.addActionListener(e -> System.out.println("Import " + label + " clicked"));
         ExportBtn.addActionListener(e -> System.out.println("Export " + label + " clicked"));
         searchBtn.addActionListener(e -> applySearchFilter());
     }
@@ -821,6 +827,7 @@ public class ContentPanel extends JPanel {
     public void setAddAction(ActionListener listener)    { resetActionListeners(AddBtn);    AddBtn.addActionListener(listener); }
     public void setUpdateAction(ActionListener listener) { resetActionListeners(UpdateBtn); UpdateBtn.addActionListener(listener); }
     public void setDeleteAction(ActionListener listener) { resetActionListeners(DeleteBtn); DeleteBtn.addActionListener(listener); }
+    public void setImportAction(ActionListener listener) { resetActionListeners(ImportBtn); ImportBtn.addActionListener(listener); }
     public void setExportAction(ActionListener listener) { resetActionListeners(ExportBtn); ExportBtn.addActionListener(listener); }
     public void setSearchAction(ActionListener listener) { resetActionListeners(searchBtn); searchBtn.addActionListener(listener); }
 

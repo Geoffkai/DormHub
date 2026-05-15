@@ -112,7 +112,7 @@ public class StyledMessageDialog extends JDialog {
     }
 
     public static void showError(Component parent, String title, String message) {
-        show(parent, title, message, MessageType.ERROR, 22, 300);
+        show(parent, title, message, MessageType.ERROR, 14, 300);
     }
 
     private static void show(Component parent, String title, String message, MessageType type,
