@@ -29,3 +29,5 @@ Thumbs.db
 
 # Local runtime authentication state
 app.env
+
+*.pptx
