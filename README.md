@@ -1,39 +1,56 @@
 # DormHub
 
-DormHub is a Java desktop application for dormitory management. It helps organize residents, rooms, assignments, payments, and dorm passes in one place through a Swing-based GUI.
+DormHub is a Java desktop application for dormitory management. It organizes residents, rooms, assignments, payments, and dorm passes in one Swing-based application.
 
-The project uses a layered architecture (View -> Controller -> Service -> DAO -> Database) to keep business logic clean and maintainable.
+The project now uses an IDE-agnostic layout so it can be compiled and packaged without Maven or a Maven wrapper. The active application source lives under `Thumbler_sa_ref/DormHub/`.
 
-## What This Project Does
+## What DormHub Does
 
 - Manage resident records
 - Manage room information and availability
 - Track room assignments
 - Record payments
 - Manage dorm pass records
-- Initialize database schema automatically on first run
+- Load database settings from a simple properties file
 
-## Tech Stack
+## Current Project Layout
 
-- Java 23
-- Maven Wrapper
-- Java Swing (GUI)
-- MySQL + MySQL Connector/J
-- JUnit 5 (testing)
+```text
+MP_127/
+├── Thumbler_sa_ref/
+│   ├── DormHub/
+│   │   ├── src/           Java source files (`com/dormhub/...`)
+│   │   ├── resources/     Runtime configuration such as `db.properties`
+│   │   ├── assets/        Images and other visual assets
+│   │   ├── libs/          Third-party JAR dependencies
+│   │   ├── out/           Compiled classes and copied runtime files
+│   │   ├── manifest.txt   JAR manifest used by `jar -cfm`
+│   │   ├── DormHub.jar    Packaged application JAR
+│   │   └── build.bat      Optional Windows build helper
+│   └── README.md          This file
+├── documentation/         Technical report and user manual
+└── installers/            Installer outputs such as Inno Setup or InstallForge builds
+```
 
-## Prerequisites
+## Requirements
 
-Before running DormHub, make sure you have:
+- JDK 23
+- MySQL Server running locally or on a reachable host
+- The dependency JARs placed in `Thumbler_sa_ref/DormHub/libs/`
 
-- JDK 23 installed
-- MySQL server running
-- Git (optional, for cloning)
+## Dependencies
+
+Place these libraries in `Thumbler_sa_ref/DormHub/libs/` before compiling:
+
+- `mysql-connector-j-9.6.0.jar` or your chosen MySQL Connector/J version
+- `jcalendar-1.4.jar`
+- Any other supporting JARs your build requires
+
+The repository already contains additional library files used by the project, including JGoodies and JUnit artifacts.
 
 ## Configuration
 
-Database and app credentials are loaded from:
-
-- `src/main/resources/db.properties`
+Database and app credentials are loaded from `Thumbler_sa_ref/DormHub/resources/db.properties`.
 
 Example format:
 
@@ -42,127 +59,77 @@ db.url=jdbc:mysql://localhost:3306/dormhub?useSSL=false&serverTimezone=UTC&allow
 db.user=root
 db.password=your_password
 
-app.username=
-app.password=
+app.username=admin
+app.password=admin123
 ```
 
-You can also override database values with:
+## Manual Build Flow
 
-- System properties: `-Ddb.url`, `-Ddb.user`, `-Ddb.password`
-- Environment variables: `DB_URL`, `DB_USER`, `DB_PASSWORD`
+This is the flow your professor described:
 
-## Run The Application
+1. Compile all `.java` files into `out/`
+2. Copy resources and assets into `out/`
+3. Create a JAR with `jar -cfm` using `manifest.txt`
+4. Optionally feed the JAR into an installer tool such as Inno Setup or InstallForge
 
-DormHub now starts directly in GUI mode by default.
+### Compile
 
-### Windows (PowerShell / Command Prompt)
+From `Thumbler_sa_ref/DormHub/`:
 
-```powershell
-.\mvnw.cmd exec:java
+```cmd
+dir /s /b src\*.java > sources.txt
+javac -cp "libs/*" -d out -encoding UTF-8 @sources.txt
 ```
 
-### macOS / Linux
+### Copy Runtime Files
 
-```bash
-./mvnw exec:java
+```cmd
+xcopy /s /e /y resources out\resources\
+xcopy /s /e /y assets out\assets\
 ```
 
-## Build A Runnable JAR
+### Build the JAR
 
-To create a packaged executable JAR with all dependencies bundled:
+`manifest.txt` must contain a blank line at the end.
 
-### Windows
-
-```powershell
-.\mvnw.cmd clean package
-java -jar target\dormhub-1.0-SNAPSHOT-jar-with-dependencies.jar
+```cmd
+jar -cfm DormHub.jar manifest.txt -C out .
 ```
 
-### macOS / Linux
+### Verify the JAR
 
-```bash
-./mvnw clean package
-java -jar target/dormhub-1.0-SNAPSHOT-jar-with-dependencies.jar
+```cmd
+jar tf DormHub.jar | findstr /i "com/dormhub/Main.class"
 ```
 
-This JAR includes all application dependencies, so only Java needs to be installed to run it.
+### Run the Application
 
-## Build A Standalone Application (Windows)
-
-To create a fully standalone app that includes its own Java runtime (no JDK installation required):
-
-### Build the Standalone App
-
-```powershell
-.\mvnw.cmd clean package jpackage:jpackage
+```cmd
+java -cp "DormHub.jar;libs/*" com.dormhub.Main
 ```
 
-This creates a portable application at `target/installer/DormHub/` containing:
-- **DormHub.exe** — Double-click to launch the application
-- **runtime/** — Bundled Java Runtime Environment
-- **app/** — Application files and JAR
+If you want to run it with double-click later, keep the dependency JARs beside the main JAR or move them into the installer package as well.
 
-### How to Use
+## Installer Preparation
 
-1. Copy the entire `target/installer/DormHub/` folder to any location
-2. Double-click `DormHub.exe` to run the application
-3. No Java installation needed on the end-user's machine
+Once `DormHub.jar` works, the next step is to create an installer using one of these tools:
 
-### Distributing the App
+- Inno Setup
+- InstallForge
 
-You can zip the `target/installer/DormHub/` folder for distribution to other Windows machines.
+Typical installer contents:
 
-## Run Tests
-
-### Windows
-
-```powershell
-.\mvnw.cmd test
-```
-
-### macOS / Linux
-
-```bash
-./mvnw test
-```
-
-## Project Structure
-
-```text
-MP_127/
-|- pom.xml
-|- mvnw / mvnw.cmd
-|- README.md
-|- sql/
-|  |- dormhub.sql
-|- src/
-|  |- main/
-|  |  |- java/com/dormhub/
-|  |  |  |- Main.java
-|  |  |  |- controller/
-|  |  |  |- dao/
-|  |  |  |  |- impl/
-|  |  |  |- db/
-|  |  |  |- model/
-|  |  |  |- service/
-|  |  |  |  |- Impl/
-|  |  |  |- util/
-|  |  |  |- view/
-|  |  |- resources/
-|  |     |- db.properties
-|  |     |- com/dormhub/db/
-|  |     |- img/
-|  |- test/
-|     |- java/com/dormhub/
-|- GUI/
-|- target/
-```
+- `DormHub.jar`
+- `libs/`
+- `assets/`
+- Any runtime or configuration files the application needs at launch
 
 ## Notes
 
-- The schema can be initialized automatically when the app connects for the first time.
-- Keep sensitive credentials out of shared/public repositories.
+- The application uses a layered architecture: View -> Controller -> Service -> DAO -> Database.
+- Keep database credentials and other sensitive values out of public repositories.
+- The root README is now the canonical documentation for the project layout and build flow.
 
 ## Authors
 
-Built and maintained by the DormHub project team.
+DormHub project team
