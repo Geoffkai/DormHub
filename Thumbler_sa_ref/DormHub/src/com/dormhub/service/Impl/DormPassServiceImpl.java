@@ -1,6 +1,7 @@
 package com.dormhub.service.Impl;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.dormhub.dao.DormPassDAO;
@@ -22,11 +23,21 @@ public class DormPassServiceImpl implements DormPassService {
     @Override
     public void addDormPass(int residentId, String type, String reason, String destination, Date dateApplied,
             String status) {
-        if (residentId <= 0) throw new IllegalArgumentException("Resident ID must be positive.");
-        if (type == null || type.isBlank()) throw new IllegalArgumentException("Type is required.");
-        if (reason == null || reason.isBlank()) throw new IllegalArgumentException("Reason is required.");
-        if (destination == null || destination.isBlank()) throw new IllegalArgumentException("Destination is required.");
-        if (status == null || status.isBlank()) throw new IllegalArgumentException("Status is required.");
+        if (residentId <= 0)
+            throw new IllegalArgumentException("Resident ID must be positive.");
+        if (type == null || type.isBlank())
+            throw new IllegalArgumentException("Type is required.");
+        if (reason == null || reason.isBlank())
+            throw new IllegalArgumentException("Reason is required.");
+        if (destination == null || destination.isBlank())
+            throw new IllegalArgumentException("Destination is required.");
+        if (dateApplied == null)
+            throw new IllegalArgumentException("Date applied is required.");
+        if (dateApplied.before(Date.valueOf(LocalDate.now()))) {
+            throw new IllegalArgumentException("Date applied cannot be before today's date.");
+        }
+        if (status == null || status.isBlank())
+            throw new IllegalArgumentException("Status is required.");
 
         DormPass dormPass = buildDormPass(0, residentId, type, reason, destination, dateApplied, status);
         dormPassDAO.insert(dormPass);

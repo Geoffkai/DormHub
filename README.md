@@ -126,7 +126,10 @@ Typical installer contents:
 - `DormHub.jar`
 - `libs/`
 - `img/` or `assets/img/`
+- `jre/` or another bundled Java runtime
 - Any runtime or configuration files the application needs at launch
+
+This repository now includes an InstallForge project and a ready-to-build EXE installer named `DormHub-Setup.exe`. The installer is a one-click Windows package that bundles the app and its runtime so users do not need to install Java separately.
 
 ## Notes
 
