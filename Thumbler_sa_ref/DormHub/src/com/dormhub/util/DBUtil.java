@@ -18,9 +18,64 @@ public final class DBUtil {
 
     public static Connection getConnection() throws SQLException {
         DatabaseConfigLoader.DatabaseConfig config = DatabaseConfigLoader.loadDatabaseConfig();
-        Connection connection = java.sql.DriverManager.getConnection(config.url(), config.user(), config.password());
+        Connection connection;
+
+        try {
+            // Try to connect to the dormhub database directly
+            connection = java.sql.DriverManager.getConnection(config.url(), config.user(), config.password());
+        } catch (SQLException e) {
+            // Database doesn't exist yet, create it and the schema
+            String baseUrl = extractBaseUrlWithoutDatabase(config.url());
+            try {
+                Connection baseConnection = java.sql.DriverManager.getConnection(baseUrl, config.user(),
+                        config.password());
+
+                // Read and execute the SQL script to create database and tables
+                String schemaSql = readResourceSchema(SCHEMA_RESOURCE);
+                if (schemaSql != null) {
+                    try (Statement statement = baseConnection.createStatement()) {
+                        for (String sql : splitStatements(schemaSql)) {
+                            if (!sql.trim().isEmpty()) {
+                                statement.execute(sql);
+                            }
+                        }
+                    }
+                }
+                baseConnection.close();
+
+                // Now connect to the created database
+                connection = java.sql.DriverManager.getConnection(config.url(), config.user(), config.password());
+            } catch (SQLException e2) {
+                throw new SQLException(
+                        "Failed to create dormhub database and schema. Check your database server and credentials.",
+                        e2);
+            }
+        }
+
         initializeSchema(connection);
         return connection;
+    }
+
+    private static String extractBaseUrlWithoutDatabase(String fullUrl) {
+        // Extract base URL without the database name
+        // From: jdbc:mysql://localhost:3306/dormhub?...
+        // To: jdbc:mysql://localhost:3306/?...
+        String url = fullUrl;
+
+        int lastSlash = url.lastIndexOf('/');
+        int questionMark = url.indexOf('?');
+
+        if (lastSlash != -1) {
+            if (questionMark != -1) {
+                // Has query parameters
+                return url.substring(0, lastSlash + 1) + "?" + url.substring(questionMark + 1);
+            } else {
+                // No query parameters
+                return url.substring(0, lastSlash + 1);
+            }
+        }
+
+        return url;
     }
 
     private static void initializeSchema(Connection connection) throws SQLException {

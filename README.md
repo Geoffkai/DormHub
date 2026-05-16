@@ -21,7 +21,7 @@ MP_127/
 │   ├── DormHub/
 │   │   ├── src/           Java source files (`com/dormhub/...`)
 │   │   ├── resources/     Runtime configuration such as `db.properties`
-│   │   ├── assets/        Images and other visual assets
+│   │   ├── assets/img/    Images and other visual assets
 │   │   ├── libs/          Third-party JAR dependencies
 │   │   ├── out/           Compiled classes and copied runtime files
 │   │   ├── manifest.txt   JAR manifest used by `jar -cfm`
@@ -85,8 +85,10 @@ javac -cp "libs/*" -d out -encoding UTF-8 @sources.txt
 
 ```cmd
 xcopy /s /e /y resources out\resources\
-xcopy /s /e /y assets out\assets\
+xcopy /s /e /y assets\img out\img\
 ```
+
+The application looks for images on the classpath under `/img/...`. The runtime loader also falls back to `assets/img/...` when you run directly from the workspace, but copying into `out\img\` keeps the packaged layout clean.
 
 ### Build the JAR
 
@@ -108,6 +110,8 @@ jar tf DormHub.jar | findstr /i "com/dormhub/Main.class"
 java -cp "DormHub.jar;libs/*" com.dormhub.Main
 ```
 
+Run the command from `Thumbler_sa_ref/DormHub/` so `app.env` and the image assets are found correctly.
+
 If you want to run it with double-click later, keep the dependency JARs beside the main JAR or move them into the installer package as well.
 
 ## Installer Preparation
@@ -121,7 +125,7 @@ Typical installer contents:
 
 - `DormHub.jar`
 - `libs/`
-- `assets/`
+- `img/` or `assets/img/`
 - Any runtime or configuration files the application needs at launch
 
 ## Notes
