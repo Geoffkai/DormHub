@@ -1,39 +1,31 @@
 package com.dormhub.auth;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import com.dormhub.util.DatabaseConfigLoader;
 
 public class AuthService {
-    private static final String DEFAULT_USER = "admin";
-    private static final String DEFAULT_PASS = "admin123";
 
-    private final String configuredUser;
-    private final String configuredPass;
-
-    public AuthService() {
-        String[] creds = loadCredentials();
-        this.configuredUser = creds[0];
-        this.configuredPass = creds[1];
-    }
-
-    private String[] loadCredentials() {
-        Properties props = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("db.properties")) {
-            if (input != null)
-                props.load(input);
-        } catch (IOException e) {
-            return new String[] { DEFAULT_USER, DEFAULT_PASS };
+    /**
+     * Authenticates the user against the admin credentials stored in
+     * {@code app.env}. Unlike the previous version this class no longer reads
+     * {@code db.properties} and no longer has hardcoded fallback credentials —
+     * first-run setup (handled by
+     * {@link com.dormhub.controller.LoginController}) must be completed before
+     * any login attempt is made.
+     */
+    public boolean authenticate(String username, String password) {
+        if (username == null || password == null) {
+            return false;
         }
 
-        String user = props.getProperty("app.username", DEFAULT_USER);
-        String pass = props.getProperty("app.password", DEFAULT_PASS);
-        return new String[] { user, pass };
-    }
+        String[] creds = DatabaseConfigLoader.loadAppCredentials();
+        String storedUser = creds[0];
+        String storedPass = creds[1];
 
-    public boolean authenticate(String username, String password) {
-        if (username == null || password == null)
+        if (storedUser.isBlank() || storedPass.isBlank()) {
+            // Setup has not been completed yet — deny access.
             return false;
-        return username.trim().equals(configuredUser) && password.trim().equals(configuredPass);
+        }
+
+        return username.trim().equals(storedUser) && password.trim().equals(storedPass);
     }
 }
