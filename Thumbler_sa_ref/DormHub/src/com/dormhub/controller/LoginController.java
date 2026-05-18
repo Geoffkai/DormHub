@@ -363,7 +363,7 @@ public class LoginController {
     private void runSqlScript(String dbUrl, String dbUser, String dbPassword,
             String classpathResource) throws SQLException, IOException {
 
-        InputStream sqlStream = getClass().getClassLoader().getResourceAsStream(classpathResource);
+        InputStream sqlStream = openSqlStream(classpathResource);
         if (sqlStream == null) {
             throw new IOException("SQL file not found in classpath: " + classpathResource);
         }
@@ -385,6 +385,41 @@ public class LoginController {
                 }
             }
         }
+    }
+
+    private InputStream openSqlStream(String classpathResource) throws IOException {
+        String normalized = classpathResource.startsWith("/") ? classpathResource.substring(1) : classpathResource;
+        String fileName = normalized.substring(normalized.lastIndexOf('/') + 1);
+
+        String[] resourceCandidates = new String[] {
+                normalized,
+                "resources/db/" + fileName,
+                "db/" + fileName
+        };
+
+        for (String resourceCandidate : resourceCandidates) {
+            InputStream stream = getClass().getClassLoader().getResourceAsStream(resourceCandidate);
+            if (stream != null) {
+                return stream;
+            }
+        }
+
+        java.nio.file.Path[] candidatePaths = new java.nio.file.Path[] {
+                java.nio.file.Paths.get(normalized),
+                java.nio.file.Paths.get("resources", "db", fileName),
+                java.nio.file.Paths.get("db", fileName),
+                java.nio.file.Paths.get("src").resolve(normalized),
+                java.nio.file.Paths.get("resources").resolve(normalized),
+                java.nio.file.Paths.get("resources", "db", fileName)
+        };
+
+        for (java.nio.file.Path path : candidatePaths) {
+            if (java.nio.file.Files.exists(path)) {
+                return java.nio.file.Files.newInputStream(path);
+            }
+        }
+
+        return null;
     }
 
     // -------------------------------------------------------------------------

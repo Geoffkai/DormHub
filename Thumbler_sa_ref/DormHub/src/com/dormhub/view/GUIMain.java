@@ -3,7 +3,6 @@ package com.dormhub.view;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Toolkit;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -16,18 +15,20 @@ import javax.swing.JTextField;
 import com.dormhub.controller.LoginController;
 
 public class GUIMain {
+    private static final Dimension WINDOW_SIZE = new Dimension(1920, 1080);
+
     public static void main(String[] args) {
         System.setProperty("sun.java2d.uiScale", "1.0");
 
         JFrame frame = new JFrame("Login Screen");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setUndecorated(true);
+        frame.setResizable(false);
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(screenSize.width, screenSize.height);
+        frame.setSize(WINDOW_SIZE);
 
         BackgroundPanel loginPage = new BackgroundPanel("/img/Login.png");
-        loginPage.setBounds(0, 0, screenSize.width, screenSize.height);
+        loginPage.setBounds(0, 0, WINDOW_SIZE.width, WINDOW_SIZE.height);
         loginPage.setLayout(null);
         loginPage.setOpaque(false);
 
@@ -84,7 +85,7 @@ public class GUIMain {
 
         frame.setContentPane(loginPage);
         frame.getRootPane().setDefaultButton(loginButton);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
         // Construct the controller AFTER the frame is visible so that the

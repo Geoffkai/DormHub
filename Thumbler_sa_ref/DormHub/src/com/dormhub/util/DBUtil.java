@@ -8,7 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public final class DBUtil {
-    private static final String SCHEMA_RESOURCE = "/com/dormhub/db/dormhub.sql";
+    private static final String SCHEMA_RESOURCE = "/com/dormhub/db/dormhub_schema.sql";
+    private static final String FAT_JAR_SCHEMA_RESOURCE = "/resources/db/dormhub_schema.sql";
     private static final Object INIT_LOCK = new Object();
 
     private static volatile boolean schemaInitialized;
@@ -200,13 +201,62 @@ public final class DBUtil {
     }
 
     private static String readResourceSchema(String resource) {
-        try (java.io.InputStream input = DBUtil.class.getResourceAsStream(resource)) {
-            if (input == null)
+        String[] candidatePaths = {
+                resource,
+                resource.startsWith("/") ? resource.substring(1) : resource,
+                FAT_JAR_SCHEMA_RESOURCE,
+                FAT_JAR_SCHEMA_RESOURCE.substring(1),
+                "resources/db/" + fileName(resource),
+                "db/" + fileName(resource),
+                "src" + resource,
+                "resources" + resource,
+                "resources/db/" + fileName(resource)
+        };
+
+        for (String candidate : candidatePaths) {
+            String schema = readSchemaCandidate(candidate);
+            if (schema != null && !schema.isBlank()) {
+                return schema;
+            }
+        }
+
+        return null;
+    }
+
+    private static String fileName(String resource) {
+        int lastSlash = resource.lastIndexOf('/');
+        return lastSlash >= 0 ? resource.substring(lastSlash + 1) : resource;
+    }
+
+    private static String readSchemaCandidate(String candidate) {
+        try (java.io.InputStream input = openSchemaStream(candidate)) {
+            if (input == null) {
                 return null;
+            }
             return new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
         } catch (java.io.IOException e) {
             return null;
         }
+    }
+
+    private static java.io.InputStream openSchemaStream(String candidate) throws java.io.IOException {
+        java.io.InputStream classpathStream = DBUtil.class.getResourceAsStream(candidate);
+        if (classpathStream != null) {
+            return classpathStream;
+        }
+
+        classpathStream = DBUtil.class.getClassLoader()
+                .getResourceAsStream(candidate.startsWith("/") ? candidate.substring(1) : candidate);
+        if (classpathStream != null) {
+            return classpathStream;
+        }
+
+        java.nio.file.Path path = java.nio.file.Paths.get(candidate);
+        if (java.nio.file.Files.exists(path)) {
+            return java.nio.file.Files.newInputStream(path);
+        }
+
+        return null;
     }
 
     private static String[] splitStatements(String script) {
