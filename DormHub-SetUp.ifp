@@ -33,10 +33,10 @@
     </UserInterface>
     <InstallationFiles defaultInstallationPath="&lt;ProgramFiles&gt;\&lt;Thumbler_sa_ref&gt;\&lt;DormHub&gt;\" isDefaultInstallationPathAlterable ="true">
       <InstallationFile size="N/A" type="[Folder]">C:\Users\Geoff\OneDrive_Documents\Dokumen\2nd_2nd\MP_127\Thumbler_sa_ref\DormHub\assets\</InstallationFile>
-      <InstallationFile size="N/A" type="[Folder]">C:\Users\Geoff\OneDrive_Documents\Dokumen\2nd_2nd\MP_127\Thumbler_sa_ref\DormHub\jdk-25.0.3+9-jre\</InstallationFile>
       <InstallationFile size="N/A" type="[Folder]">C:\Users\Geoff\OneDrive_Documents\Dokumen\2nd_2nd\MP_127\Thumbler_sa_ref\DormHub\libs\</InstallationFile>
       <InstallationFile size="N/A" type="[Folder]">C:\Users\Geoff\OneDrive_Documents\Dokumen\2nd_2nd\MP_127\Thumbler_sa_ref\DormHub\resources\</InstallationFile>
       <InstallationFile size="86 Byte" type="bat">C:\Users\Geoff\OneDrive_Documents\Dokumen\2nd_2nd\MP_127\Thumbler_sa_ref\DormHub\DormHub.bat</InstallationFile>
+      <InstallationFile size="N/A" type="[Folder]">C:\Users\Geoff\OneDrive_Documents\Dokumen\2nd_2nd\MP_127\Thumbler_sa_ref\DormHub\jdk-25.0.3+9-jre\</InstallationFile>
       <InstallationFile size="2.3 MB" type="jar">C:\Users\Geoff\OneDrive_Documents\Dokumen\2nd_2nd\MP_127\Thumbler_sa_ref\DormHub\DormHub.jar</InstallationFile>
     </InstallationFiles>
     <Languages/>

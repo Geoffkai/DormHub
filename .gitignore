@@ -31,3 +31,6 @@ Thumbs.db
 app.env
 
 *.pptx
+
+# Claude
+.claude

@@ -1,17 +1,22 @@
 # DormHub
 
-DormHub is a Java desktop application for dormitory management. It organizes residents, rooms, assignments, payments, and dorm passes in one Swing-based application.
+DormHub is a Swing-based Java desktop app for dormitory management. It uses MySQL to keep resident records, room assignments, payments, and dorm passes organized in one place, with a simple first-run setup and saved login credentials.
 
-The project now uses an IDE-agnostic layout so it can be compiled and packaged without Maven or a Maven wrapper. The active application source lives under `Thumbler_sa_ref/DormHub/`.
+The active application source lives under `Thumbler_sa_ref/DormHub/`. The sections below keep the current project state, build flow, and packaging notes that apply to this codebase.
 
-## What DormHub Does
+## Overview
 
-- Manage resident records
-- Manage room information and availability
-- Track room assignments
-- Record payments
-- Manage dorm pass records
-- Load database settings from a simple properties file
+- Manage residents, rooms, assignments, payments, and dorm passes
+- Store app credentials and database settings in `resources/db.properties`
+- Create the database automatically on first launch when needed
+- Keep the workflow simple for daily dorm administration
+
+## Tech Stack
+
+- Java 21
+- Swing desktop UI
+- MySQL database
+- JDBC with `mysql-connector-j`
 
 ## Current Project Layout
 
