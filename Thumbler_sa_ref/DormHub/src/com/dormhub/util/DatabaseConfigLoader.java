@@ -17,6 +17,10 @@ public final class DatabaseConfigLoader {
     private DatabaseConfigLoader() {
     }
 
+    // -------------------------------------------------------------------------
+    // Database config
+    // -------------------------------------------------------------------------
+
     public static DatabaseConfig loadDatabaseConfig() {
         Properties properties = loadFileProperties();
 
@@ -40,19 +44,123 @@ public final class DatabaseConfigLoader {
         return new DatabaseConfig(url, user, password);
     }
 
+    public static String getDatabaseUrl() {
+        return loadDatabaseConfig().url();
+    }
+
+    public static boolean hasStoredCredentials() {
+        DatabaseConfig config = loadDatabaseConfig();
+        return !config.user().isBlank() && !config.password().isBlank();
+    }
+
+    public static boolean canConnect(String url, String user, String password) {
+        if (url == null || url.isBlank() || user == null || user.isBlank()
+                || password == null || password.isBlank()) {
+            return false;
+        }
+        try (java.sql.Connection connection = java.sql.DriverManager.getConnection(url, user, password)) {
+            return connection.isValid(2);
+        } catch (java.sql.SQLException e) {
+            return false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // App (admin) credentials
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns true when {@code app.env} already contains a saved admin username,
+     * meaning first-run setup has already been completed.
+     */
+    public static boolean hasStoredAppCredentials() {
+        Properties properties = loadFileProperties();
+        String user = firstNonBlank(
+                properties.getProperty("APP_USERNAME"),
+                properties.getProperty("app.username"));
+        return user != null && !user.isBlank();
+    }
+
+    /**
+     * Loads the admin (app-level) username and password from {@code app.env}.
+     * Returns an array of two strings: [username, password].
+     * Both are empty strings if not found.
+     */
+    public static String[] loadAppCredentials() {
+        Properties properties = loadFileProperties();
+        String user = firstNonBlank(
+                properties.getProperty("APP_USERNAME"),
+                properties.getProperty("app.username"));
+        String pass = firstNonBlank(
+                properties.getProperty("APP_PASSWORD"),
+                properties.getProperty("app.password"));
+        return new String[] {
+                user == null ? "" : user,
+                pass == null ? "" : pass
+        };
+    }
+
+    // -------------------------------------------------------------------------
+    // Persistence
+    // -------------------------------------------------------------------------
+
+    /**
+     * Saves both the MySQL credentials and the app (admin) credentials together
+     * into {@code app.env}. Passing {@code null} for the app fields preserves any
+     * previously saved app credentials in the file.
+     */
+    public static void saveDatabaseCredentials(String url, String user, String password) throws IOException {
+        saveAll(url, user, password, null, null);
+    }
+
+    /**
+     * Saves both DB credentials and admin credentials into {@code app.env} in one
+     * atomic write so neither set is ever partially persisted.
+     */
+    public static void saveAll(String dbUrl, String dbUser, String dbPassword,
+            String appUsername, String appPassword) throws IOException {
+
+        // Keep previously stored app creds if new ones are not supplied
+        if (appUsername == null || appUsername.isBlank()) {
+            String[] existing = loadAppCredentials();
+            appUsername = existing[0];
+            appPassword = existing[1];
+        }
+
+        String effectiveUrl = (dbUrl == null || dbUrl.isBlank()) ? DEFAULT_URL : dbUrl;
+
+        try (BufferedWriter writer = Files.newBufferedWriter(
+                ENV_FILE,
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE)) {
+
+            writer.write("# MySQL Database Configuration\n");
+            writer.write("DB_URL=" + effectiveUrl + "\n");
+            writer.write("DB_USER=" + (dbUser == null ? "" : dbUser) + "\n");
+            writer.write("DB_PASSWORD=" + (dbPassword == null ? "" : dbPassword) + "\n");
+            writer.write("\n");
+            writer.write("# Admin (App) Credentials\n");
+            writer.write("APP_USERNAME=" + (appUsername == null ? "" : appUsername) + "\n");
+            writer.write("APP_PASSWORD=" + (appPassword == null ? "" : appPassword) + "\n");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal helpers
+    // -------------------------------------------------------------------------
+
     private static Properties loadFileProperties() {
         Properties properties = new Properties();
-
         if (!Files.exists(ENV_FILE)) {
             return properties;
         }
-
         try (BufferedReader reader = Files.newBufferedReader(ENV_FILE, StandardCharsets.UTF_8)) {
             properties.load(reader);
         } catch (IOException e) {
             return properties;
         }
-
         return properties;
     }
 
@@ -65,42 +173,9 @@ public final class DatabaseConfigLoader {
         return "";
     }
 
-    public static void saveDatabaseCredentials(String url, String user, String password) throws IOException {
-        String effectiveUrl = (url == null || url.isBlank()) ? DEFAULT_URL : url;
-
-        try (BufferedWriter writer = Files.newBufferedWriter(
-                ENV_FILE,
-                StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE)) {
-            writer.write("# MySQL Database Configuration\n");
-            writer.write("DB_URL=" + effectiveUrl + "\n");
-            writer.write("DB_USER=" + (user == null ? "" : user) + "\n");
-            writer.write("DB_PASSWORD=" + (password == null ? "" : password) + "\n");
-        }
-    }
-
-    public static boolean hasStoredCredentials() {
-        DatabaseConfig config = loadDatabaseConfig();
-        return !config.user().isBlank() && !config.password().isBlank();
-    }
-
-    public static boolean canConnect(String url, String user, String password) {
-        if (url == null || url.isBlank() || user == null || user.isBlank() || password == null || password.isBlank()) {
-            return false;
-        }
-
-        try (java.sql.Connection connection = java.sql.DriverManager.getConnection(url, user, password)) {
-            return connection.isValid(2);
-        } catch (java.sql.SQLException e) {
-            return false;
-        }
-    }
-
-    public static String getDatabaseUrl() {
-        return loadDatabaseConfig().url();
-    }
+    // -------------------------------------------------------------------------
+    // Value object
+    // -------------------------------------------------------------------------
 
     public static final class DatabaseConfig {
         private final String url;
@@ -113,16 +188,8 @@ public final class DatabaseConfigLoader {
             this.password = password == null ? "" : password;
         }
 
-        public String url() {
-            return url;
-        }
-
-        public String user() {
-            return user;
-        }
-
-        public String password() {
-            return password;
-        }
+        public String url() { return url; }
+        public String user() { return user; }
+        public String password() { return password; }
     }
 }

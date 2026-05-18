@@ -82,15 +82,19 @@ public class GUIMain {
         Error.setVisible(false);
         loginPage.add(Error);
 
-        // Authentication process here
-        LoginController loginController = new LoginController(frame, usernameField, passwordField, Error);
-        loginButton.addActionListener(e -> loginController.handleLogin());
-        usernameField.addActionListener(e -> loginButton.doClick());
-        passwordField.addActionListener(e -> loginButton.doClick());
-
         frame.setContentPane(loginPage);
         frame.getRootPane().setDefaultButton(loginButton);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
+
+        // Construct the controller AFTER the frame is visible so that the
+        // first-run setup dialogs have a visible parent window to anchor to.
+        // invokeLater ensures the frame has fully painted before dialogs appear.
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            LoginController loginController = new LoginController(frame, usernameField, passwordField, Error);
+            loginButton.addActionListener(e -> loginController.handleLogin());
+            usernameField.addActionListener(e -> loginButton.doClick());
+            passwordField.addActionListener(e -> loginButton.doClick());
+        });
     }
 }
