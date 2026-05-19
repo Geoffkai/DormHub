@@ -11,10 +11,46 @@ import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
 public final class DatabaseConfigLoader {
-    private static final Path ENV_FILE = Paths.get("app.env");
+
+    // Resolves to C:\ProgramData\DormHub\app.env on Windows.
+    // ProgramData is writable by all users without admin rights.
+    private static final Path ENV_DIR = resolveEnvDir();
+    private static final Path ENV_FILE = ENV_DIR.resolve("app.env");
+
     private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/dormhub?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC";
 
     private DatabaseConfigLoader() {
+    }
+
+    // -------------------------------------------------------------------------
+    // Resolve storage directory
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the directory where app.env is stored.
+     * Priority:
+     *   1. %PROGRAMDATA%\DormHub  (C:\ProgramData\DormHub on most Windows installs)
+     *   2. Falls back to the user's home directory (~/.dormhub) on non-Windows or
+     *      if PROGRAMDATA is not set, so the app still works during development.
+     */
+    private static Path resolveEnvDir() {
+        String programData = System.getenv("PROGRAMDATA");
+        if (programData != null && !programData.isBlank()) {
+            return Paths.get(programData, "DormHub");
+        }
+        // Fallback for dev/non-Windows environments
+        return Paths.get(System.getProperty("user.home"), ".dormhub");
+    }
+
+    /**
+     * Ensures the storage directory exists. Called lazily before every write so
+     * the directory is created automatically on first run without needing the
+     * installer to pre-create it.
+     */
+    private static void ensureDirectoryExists() throws IOException {
+        if (!Files.exists(ENV_DIR)) {
+            Files.createDirectories(ENV_DIR);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -116,6 +152,8 @@ public final class DatabaseConfigLoader {
     /**
      * Saves both DB credentials and admin credentials into {@code app.env} in one
      * atomic write so neither set is ever partially persisted.
+     * File is written to C:\ProgramData\DormHub\app.env (or ~/.dormhub/app.env
+     * on non-Windows systems).
      */
     public static void saveAll(String dbUrl, String dbUser, String dbPassword,
             String appUsername, String appPassword) throws IOException {
@@ -128,6 +166,9 @@ public final class DatabaseConfigLoader {
         }
 
         String effectiveUrl = (dbUrl == null || dbUrl.isBlank()) ? DEFAULT_URL : dbUrl;
+
+        // Create C:\ProgramData\DormHub\ if it doesn't exist yet
+        ensureDirectoryExists();
 
         try (BufferedWriter writer = Files.newBufferedWriter(
                 ENV_FILE,
