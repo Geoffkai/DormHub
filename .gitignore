@@ -34,3 +34,6 @@ app.env
 
 # Claude
 .claude
+
+# Local backup of nested Git metadata
+Thumbler_sa_ref/DormHub/.git_local_backup/

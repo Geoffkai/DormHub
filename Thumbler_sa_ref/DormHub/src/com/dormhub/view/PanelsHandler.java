@@ -1,12 +1,10 @@
 package com.dormhub.view;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
-
 import javax.swing.JPanel;
 
 public class PanelsHandler extends JPanel {
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    private static final int VIRTUAL_WIDTH = GUIMain.VIRTUAL_WIDTH;
+    private static final int VIRTUAL_HEIGHT = GUIMain.VIRTUAL_HEIGHT;
 
     // Main background, manager dashboard
     BackgroundPanel mgr = new BackgroundPanel("/img/MngDshB.png");
@@ -22,12 +20,12 @@ public class PanelsHandler extends JPanel {
 
     public PanelsHandler() {
         setLayout(null);
-        setBounds(0, 0, screenSize.width, screenSize.height);
+        setBounds(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
         mgr.setLayout(null);
-        mgr.setBounds(0, 0, screenSize.width, screenSize.height);
+        mgr.setBounds(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
-        contentPanel = new ContentPanel(screenSize);
+        contentPanel = new ContentPanel(GUIMain.WINDOW_SIZE);
 
         // Side panels
         BackgroundPanel residentMngrBtn = new BackgroundPanel("/img/10w.png", false);

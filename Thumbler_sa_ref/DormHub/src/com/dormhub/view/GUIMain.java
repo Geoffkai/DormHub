@@ -15,7 +15,9 @@ import javax.swing.JTextField;
 import com.dormhub.controller.LoginController;
 
 public class GUIMain {
-    private static final Dimension WINDOW_SIZE = new Dimension(1920, 1080);
+    public static final int VIRTUAL_WIDTH = 1920;
+    public static final int VIRTUAL_HEIGHT = 1080;
+    public static final Dimension WINDOW_SIZE = new Dimension(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
     public static void main(String[] args) {
         System.setProperty("sun.java2d.uiScale", "1.0");
